@@ -10,8 +10,14 @@ setup(
         'python-dotenv==1.1.0',
         'pymongo==4.12.0',
         'pillow==11.1.0',
-        'torch==2.2.0+cpu',
-        'torchvision==0.17.0+cpu',
-        'transformers==4.37.2'
+        'flask-jwt-extended==4.5.3',
+        'passlib==1.7.4',
+        'google-generativeai==0.3.2',
+        'requests==2.31.0',
+        'python-slugify==8.0.1',
+        'icalendar==5.0.7',
+        'google-auth==2.23.0',
+        'google-auth-oauthlib==1.1.0',
+        'google-api-python-client==2.97.0'
     ],
 )

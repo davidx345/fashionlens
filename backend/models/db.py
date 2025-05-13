@@ -11,7 +11,12 @@ class Database:
             # Test connection
             self.client.admin.command('ping')
             self.db = self.client[Config.MONGODB_DB]
+            
+            # Collection references
             self.analyses = self.db.analyses
+            self.users = self.db.users
+            self.wardrobe_items = self.db.wardrobe_items
+            
             print("MongoDB connection successful")
         except (ConnectionFailure, ServerSelectionTimeoutError) as e:
             print(f"Could not connect to MongoDB. Error: {e}")
@@ -34,5 +39,9 @@ class Database:
             print(f"Error retrieving analysis: {e}")
             raise
 
-    def get_user_analyses(self, user_id):
-        return list(self.analyses.find({"user_id": user_id}))
+    def get_user_analyses(self, user_id, limit=10, skip=0):
+        try:
+            return list(self.analyses.find({"user_id": user_id}).sort("created_at", -1).skip(skip).limit(limit))
+        except Exception as e:
+            print(f"Error retrieving user analyses: {e}")
+            return []
