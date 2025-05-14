@@ -167,3 +167,10 @@ Desktop.ini
 node_modules/
 npm-debug.log
 yarn-error.log
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
