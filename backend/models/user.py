@@ -1,87 +1,105 @@
-from datetime import datetime
-from bson import ObjectId
-from passlib.hash import pbkdf2_sha256
-import logging
-
-logger = logging.getLogger(__name__)
+import bcrypt
+from bson.objectid import ObjectId
+from utils.db import get_db, serialize_doc
+import datetime
 
 class User:
     """User model for authentication and profile management"""
     
-    def __init__(self, db):
-        """Initialize with database connection"""
-        self.db = db
-        self.collection = db.db.users
-    
-    def create_user(self, username, email, password):
+    @staticmethod
+    def create(name, email, password):
         """Create a new user"""
-        try:
-            # Check if email already exists
-            existing_user = self.collection.find_one({"email": email})
-            if existing_user:
-                return {"success": False, "message": "Email already registered"}
-                
-            user = {
-                "username": username,
-                "email": email,
-                "password": pbkdf2_sha256.hash(password),
-                "created_at": datetime.utcnow(),
-                "updated_at": datetime.utcnow(),
-                "wardrobe": [],
-                "analyses": []
+        db = get_db()
+        
+        # Check if user already exists
+        if db.users.find_one({'email': email}):
+            return None
+            
+        # Hash password
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        
+        # Create user document
+        user = {
+            'name': name,
+            'email': email,
+            'password': hashed_password,
+            'created_at': datetime.datetime.utcnow(),
+            'preferences': {
+                'style_preferences': [],
+                'favorite_colors': [],
+                'disliked_styles': []
             }
-            
-            user_id = self.collection.insert_one(user).inserted_id
-            return {"success": True, "user_id": str(user_id)}
-        except Exception as e:
-            logger.error(f"Error creating user: {e}")
-            return {"success": False, "message": str(e)}
+        }
+        
+        # Insert user into database
+        result = db.users.insert_one(user)
+        user['_id'] = result.inserted_id
+        
+        return serialize_doc(user)
     
-    def authenticate(self, email, password):
-        """Authenticate a user"""
-        try:
-            user = self.collection.find_one({"email": email})
-            
-            if not user or not pbkdf2_sha256.verify(password, user["password"]):
-                return None
-            
-            # Don't return password in response
-            user_dict = dict(user)
-            user_dict.pop("password", None)
-            user_dict["_id"] = str(user_dict["_id"])
-            return user_dict
-        except Exception as e:
-            logger.error(f"Error authenticating user: {e}")
+    @staticmethod
+    def authenticate(email, password):
+        """Authenticate user with email and password"""
+        db = get_db()
+        
+        # Find user by email
+        user = db.users.find_one({'email': email})
+        
+        if not user:
             return None
+            
+        # Check password
+        if bcrypt.checkpw(password.encode('utf-8'), user['password']):
+            return serialize_doc(user)
+            
+        return None
     
-    def get_user_by_id(self, user_id):
+    @staticmethod
+    def get_by_id(user_id):
         """Get user by ID"""
-        try:
-            user = self.collection.find_one({"_id": ObjectId(user_id)})
-            if user:
-                user_dict = dict(user)
-                user_dict.pop("password", None)
-                user_dict["_id"] = str(user_dict["_id"])
-                return user_dict
-            return None
-        except Exception as e:
-            logger.error(f"Error retrieving user: {e}")
-            return None
-
-    def update_user(self, user_id, update_data):
+        db = get_db()
+        
+        # Convert string ID to ObjectId if necessary
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+            
+        user = db.users.find_one({'_id': user_id})
+        return serialize_doc(user)
+    
+    @staticmethod
+    def update_profile(user_id, update_data):
         """Update user profile"""
-        try:
-            # Don't allow updating email or password through this method
-            safe_data = {k: v for k, v in update_data.items() 
-                        if k not in ["email", "password", "_id"]}
+        db = get_db()
+        
+        # Convert string ID to ObjectId if necessary
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
             
-            safe_data["updated_at"] = datetime.utcnow()
+        # Remove password from update data if present
+        if 'password' in update_data:
+            del update_data['password']
             
-            self.collection.update_one(
-                {"_id": ObjectId(user_id)},
-                {"$set": safe_data}
-            )
-            return True
-        except Exception as e:
-            logger.error(f"Error updating user: {e}")
-            return False
+        # Update user document
+        result = db.users.update_one(
+            {'_id': user_id},
+            {'$set': update_data}
+        )
+        
+        return result.modified_count > 0
+    
+    @staticmethod
+    def update_preferences(user_id, preferences):
+        """Update user style preferences"""
+        db = get_db()
+        
+        # Convert string ID to ObjectId if necessary
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+            
+        # Update user preferences
+        result = db.users.update_one(
+            {'_id': user_id},
+            {'$set': {'preferences': preferences}}
+        )
+        
+        return result.modified_count > 0

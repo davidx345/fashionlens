@@ -1,0 +1,8 @@
+torch
+transformers
+Pillow
+flask
+flask-cors
+python-dotenv
+pymongo
+requests

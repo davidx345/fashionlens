@@ -1,72 +1,60 @@
-from datetime import datetime
-from bson import ObjectId
-import logging
-
-logger = logging.getLogger(__name__)
+from bson.objectid import ObjectId
+from utils.db import get_db, serialize_doc
+import datetime
 
 class Analysis:
-    """Model for storing outfit analyses"""
+    """Analysis model for outfit analysis results"""
     
-    def __init__(self, db):
-        """Initialize with database connection"""
-        self.db = db
-        self.collection = db.db.analyses
-        self.users = db.db.users
+    @staticmethod
+    def create(user_id, analysis_data):
+        """Create a new analysis record"""
+        db = get_db()
+        
+        # Convert string ID to ObjectId if necessary
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+            
+        # Create analysis document
+        analysis = {
+            'user_id': user_id,
+            'images': analysis_data.get('images', []),
+            'results': analysis_data.get('results', {}),
+            'created_at': datetime.datetime.utcnow()
+        }
+        
+        # Insert analysis into database
+        result = db.analyses.insert_one(analysis)
+        analysis['_id'] = result.inserted_id
+        
+        return serialize_doc(analysis)
     
-    def create_analysis(self, user_id, image_url, results):
-        """Create a new outfit analysis"""
-        try:
-            analysis = {
-                "user_id": ObjectId(user_id),
-                "image_url": image_url,
-                "results": results,
-                "created_at": datetime.utcnow(),
-                "tags": results.get("tags", []),
-                "rating": results.get("overall_score", 0)
-            }
+    @staticmethod
+    def get_by_user(user_id, limit=10):
+        """Get analysis history for a user"""
+        db = get_db()
+        
+        # Convert string ID to ObjectId if necessary
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
             
-            # Insert the analysis
-            analysis_id = self.collection.insert_one(analysis).inserted_id
-            
-            # Update the user's analyses array
-            self.users.update_one(
-                {"_id": ObjectId(user_id)},
-                {"$push": {"analyses": ObjectId(analysis_id)}}
-            )
-            
-            return str(analysis_id)
-        except Exception as e:
-            logger.error(f"Error creating analysis: {e}")
-            raise
+        # Find analyses by user ID, sorted by creation date
+        analyses = list(
+            db.analyses.find({'user_id': user_id})
+            .sort('created_at', -1)
+            .limit(limit)
+        )
+        
+        return serialize_doc(analyses)
     
-    def get_analysis(self, analysis_id):
-        """Get a single analysis by ID"""
-        try:
-            analysis = self.collection.find_one({"_id": ObjectId(analysis_id)})
-            if analysis:
-                # Convert ObjectId to string
-                analysis["_id"] = str(analysis["_id"])
-                if "user_id" in analysis:
-                    analysis["user_id"] = str(analysis["user_id"])
-            return analysis
-        except Exception as e:
-            logger.error(f"Error retrieving analysis: {e}")
-            return None
-    
-    def get_user_analyses(self, user_id, limit=10, skip=0):
-        """Get analyses for a specific user"""
-        try:
-            cursor = self.collection.find(
-                {"user_id": ObjectId(user_id)}
-            ).sort("created_at", -1).skip(skip).limit(limit)
+    @staticmethod
+    def get_by_id(analysis_id):
+        """Get analysis by ID"""
+        db = get_db()
+        
+        # Convert string ID to ObjectId if necessary
+        if isinstance(analysis_id, str):
+            analysis_id = ObjectId(analysis_id)
             
-            analyses = []
-            for analysis in cursor:
-                analysis["_id"] = str(analysis["_id"])
-                analysis["user_id"] = str(analysis["user_id"])
-                analyses.append(analysis)
-                
-            return analyses
-        except Exception as e:
-            logger.error(f"Error retrieving analyses: {e}")
-            return []
+        # Find analysis by ID
+        analysis = db.analyses.find_one({'_id': analysis_id})
+        return serialize_doc(analysis)

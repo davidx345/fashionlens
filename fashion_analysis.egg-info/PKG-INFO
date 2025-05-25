@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: fashion-analysis
+Version: 0.1
+Requires-Dist: torch
+Requires-Dist: transformers
+Requires-Dist: Pillow
+Requires-Dist: flask
+Requires-Dist: flask-cors
+Requires-Dist: python-dotenv
+Requires-Dist: pymongo
+Requires-Dist: requests
+Dynamic: requires-dist

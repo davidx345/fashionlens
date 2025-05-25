@@ -1,108 +1,91 @@
 # Fashion Analysis Application
 
-An AI-powered fashion analysis tool built with Flask, React, and MongoDB.
+A full-stack application for AI-powered fashion analysis, wardrobe management, and style recommendations.
 
-## Project Structure
-```
-fashion/
-├── backend/
-│   ├── app.py
-│   ├── config.py
-│   ├── models/
-│   ├── services/
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   └── package.json
-└── docker-compose.yml
-```
-
-## Prerequisites
-- Docker
-- Docker Compose
-
-## Setup and Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd fashion
-```
-
-2. Build and start the containers:
-```bash
-docker-compose up --build
-```
-
-3. Access the application:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:5000
-
-## Environment Variables
-Create a `.env` file in the root directory with:
-```
-MONGODB_URI=mongodb://mongodb:27017
-MONGODB_DB=fashionlens
-```
-
-## Tech Stack
-- Backend: Flask (Python)
-- Frontend: React
-- Database: MongoDB
-- AI: Google Gemini API for image and text analysis
+> **Latest Update (May 23, 2025)**: Fixed frontend-backend integration issues and improved image handling!
 
 ## Features
 
-- **Outfit Analysis**: Get detailed feedback on your outfits including style classification, color harmony, fit analysis, and ratings
-- **User Accounts**: Create an account to save your analysis history and build your virtual wardrobe
-- **Personalized Recommendations**: Receive outfit recommendations based on your wardrobe items
-- **Body Shape Analysis**: Get style advice based on your body shape
-- **Fabric & Brand Recognition**: Identify fabric types and possible brands from your clothing items
-- **Multiple Angle Analysis**: Upload multiple images for more comprehensive outfit analysis
-- **Seasonal Suggestions**: Get outfit suggestions based on the current season
+- **Outfit Analysis**: Upload photos of your outfits for instant AI-powered analysis
+- **Style Scoring**: Get objective ratings on color harmony, fit, and overall style
+- **Wardrobe Management**: Digitize and organize your clothing collection
+- **Style Recommendations**: Receive personalized outfit and style suggestions
+- **Responsive Design**: Modern UI that works on all devices
 
-## Environment Variables Setup
+## Technology Stack
 
-Create a `.env` file in the root directory with:
-```
-# MongoDB Connection
-MONGODB_URI=mongodb://localhost:27017
-MONGODB_DB=fashionlens
+### Frontend
+- Next.js 14+ with App Router
+- React and TypeScript
+- Tailwind CSS for styling
+- Shadcn UI components
+- Axios for API requests
 
-# JWT Secret
-JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
+### Backend
+- Flask (Python) API server
+- MongoDB Atlas for data storage
+- Google Gemini API for AI analysis
+- JWT for authentication
 
-# Gemini API - Replace with your actual API key
-GEMINI_API_KEY=your-gemini-api-key-here
+## Setup Instructions
 
-# Google Calendar Integration (Optional)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-```
+### Prerequisites
+- Node.js (v18+)
+- Python (v3.9+)
+- MongoDB Atlas account (or local MongoDB server)
+- Google Gemini API key (for AI analysis)
 
-## Development Setup (without Docker)
+### Backend Setup
+1. Navigate to the `backend` directory
+2. Copy `.env.example` to `.env` and configure your settings
+3. Create a virtual environment: `python -m venv venv`
+4. Activate the environment:
+   - Windows: `venv\Scripts\activate`
+   - Mac/Linux: `source venv/bin/activate`
+5. Install dependencies: `pip install -r requirements.txt`
+6. Run the server: `python run.py`
 
-1. Create and activate a virtual environment:
-```powershell
-cd backend
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-```
+### Frontend Setup
+1. Navigate to the `frontend` directory
+2. Install dependencies: `npm install`
+3. Copy `.env.example` to `.env.local` and configure your settings
+4. Run the development server: `npm run dev`
 
-2. Install dependencies:
-```powershell
-pip install -r requirements.txt
-```
+### Quick Start
+For Windows users, you can simply run `run_app.bat` to start both frontend and backend.
 
-3. Start the backend server:
-```powershell
-python -m backend.app
-```
+## Project Structure
 
-4. In a separate terminal, set up the frontend:
-```powershell
-cd frontend
-npm install
-npm start
-```
+- `/backend`: Flask server code
+  - `/routes`: API endpoints
+  - `/models`: Database models
+  - `/ai`: AI analysis components
+  - `/utils`: Helper utilities
+  - `/uploads`: Storage for uploaded images
+
+- `/frontend`: Next.js application
+  - `/app`: Next.js app router pages
+  - `/components`: Reusable UI components
+  - `/api/services`: API service functions
+  - `/public`: Static assets
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/register`: Register a new user
+- `POST /api/auth/login`: Log in and get access token
+
+### Analysis
+- `POST /api/analysis/upload`: Upload image for analysis
+- `GET /api/analysis/:id`: Get specific analysis by ID
+- `GET /api/analysis/history`: Get analysis history
+
+### Wardrobe
+- `GET /api/wardrobe`: Get user's wardrobe items
+- `POST /api/wardrobe`: Add new item to wardrobe
+- `PUT /api/wardrobe/:id`: Update wardrobe item
+- `DELETE /api/wardrobe/:id`: Remove item from wardrobe
+
+### Recommendations
+- `GET /api/recommendations`: Get style recommendations
+- `GET /api/recommendations/outfits`: Get outfit recommendations

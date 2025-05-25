@@ -1,91 +1,89 @@
-from datetime import datetime
-from bson import ObjectId
-from slugify import slugify
-import logging
-
-logger = logging.getLogger(__name__)
+from bson.objectid import ObjectId
+from utils.db import get_db, serialize_doc
+import datetime
 
 class WardrobeItem:
-    """Model for storing wardrobe items"""
+    """Wardrobe item model for managing clothing items"""
     
-    CATEGORIES = [
-        "tops", "bottoms", "dresses", "outerwear", 
-        "shoes", "accessories", "other"
-    ]
-    
-    def __init__(self, db):
-        """Initialize with database connection"""
-        self.db = db
-        self.collection = db.db.wardrobe_items
-        self.users = db.db.users
-    
-    def add_item(self, user_id, name, category, image_url, properties=None):
-        """Add a new item to user's wardrobe"""
-        try:
-            if category not in self.CATEGORIES:
-                category = "other"
-                
-            if properties is None:
-                properties = {}
-                
-            item = {
-                "name": name,
-                "category": category,
-                "image_url": image_url,
-                "properties": properties,
-                "created_at": datetime.utcnow(),
-                "slug": slugify(name),
-                "user_id": ObjectId(user_id)
-            }
+    @staticmethod
+    def create(user_id, item_data):
+        """Create a new wardrobe item"""
+        db = get_db()
+        
+        # Convert string ID to ObjectId if necessary
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
             
-            # Add item to wardrobe collection
-            result = self.collection.insert_one(item)
-            item_id = result.inserted_id
-            
-            # Add reference to user's wardrobe array
-            self.users.update_one(
-                {"_id": ObjectId(user_id)},
-                {"$push": {"wardrobe": ObjectId(item_id)}}
-            )
-            
-            return str(item_id)
-        except Exception as e:
-            logger.error(f"Error adding wardrobe item: {e}")
-            raise
+        # Create item document
+        item = {
+            'user_id': user_id,
+            'name': item_data.get('name'),
+            'category': item_data.get('category'),
+            'color': item_data.get('color'),
+            'season': item_data.get('season', 'all'),
+            'image': item_data.get('image'),
+            'created_at': datetime.datetime.utcnow()
+        }
+        
+        # Insert item into database
+        result = db.wardrobe_items.insert_one(item)
+        item['_id'] = result.inserted_id
+        
+        return serialize_doc(item)
     
-    def get_user_wardrobe(self, user_id, category=None):
+    @staticmethod
+    def get_by_user(user_id):
         """Get all wardrobe items for a user"""
-        try:
-            # Create a query to retrieve the items
-            query = {"user_id": ObjectId(user_id)}
-            if category:
-                query["category"] = category
-                
-            # Retrieve the items
-            items = list(self.collection.find(query))
+        db = get_db()
+        
+        # Convert string ID to ObjectId if necessary
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
             
-            # Convert ObjectId to string
-            for item in items:
-                item["_id"] = str(item["_id"])
-                item["user_id"] = str(item["user_id"])
-                
-            return items
-        except Exception as e:
-            logger.error(f"Error retrieving wardrobe: {e}")
-            return []
+        # Find items by user ID
+        items = list(db.wardrobe_items.find({'user_id': user_id}))
+        return serialize_doc(items)
+    
+    @staticmethod
+    def get_by_id(item_id):
+        """Get wardrobe item by ID"""
+        db = get_db()
+        
+        # Convert string ID to ObjectId if necessary
+        if isinstance(item_id, str):
+            item_id = ObjectId(item_id)
             
-    def delete_item(self, user_id, item_id):
-        """Delete an item from user's wardrobe"""
-        try:
-            # Remove the reference from the user document
-            self.users.update_one(
-                {"_id": ObjectId(user_id)},
-                {"$pull": {"wardrobe": ObjectId(item_id)}}
-            )
+        # Find item by ID
+        item = db.wardrobe_items.find_one({'_id': item_id})
+        return serialize_doc(item)
+    
+    @staticmethod
+    def update(item_id, update_data):
+        """Update wardrobe item"""
+        db = get_db()
+        
+        # Convert string ID to ObjectId if necessary
+        if isinstance(item_id, str):
+            item_id = ObjectId(item_id)
             
-            # Delete the actual item
-            self.collection.delete_one({"_id": ObjectId(item_id)})
-            return True
-        except Exception as e:
-            logger.error(f"Error deleting item: {e}")
-            return False
+        # Update item document
+        result = db.wardrobe_items.update_one(
+            {'_id': item_id},
+            {'$set': update_data}
+        )
+        
+        return result.modified_count > 0
+    
+    @staticmethod
+    def delete(item_id):
+        """Delete wardrobe item"""
+        db = get_db()
+        
+        # Convert string ID to ObjectId if necessary
+        if isinstance(item_id, str):
+            item_id = ObjectId(item_id)
+            
+        # Delete item document
+        result = db.wardrobe_items.delete_one({'_id': item_id})
+        
+        return result.deleted_count > 0
