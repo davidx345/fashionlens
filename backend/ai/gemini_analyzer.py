@@ -41,20 +41,20 @@ class GeminiAnalyzer:
             
             if not image_parts:
                 return GeminiAnalyzer._mock_analysis_results()
-            
+
             # Prepare prompt
             prompt = """
             You are a fashion analysis AI. Analyze this outfit image and provide detailed feedback in JSON format.
             Include the following information:
             - overallScore: A score from 1-10 rating the outfit's overall appeal
             - style: The style category (e.g., Casual, Formal, Business Casual, Smart Casual, etc.)
-            - colorHarmony: A score from 1-10 rating the color coordination
-            - fit: A score from 1-10 rating how well the clothes fit
+            - colorHarmony: A score from 1-100 rating the color coordination
+            - fit: A score from 1-100 rating how well the clothes fit
             - occasion: An array of suitable occasions for this outfit
             - bodyShape: The body shape this outfit works best for
             - fabrics: An array of detected fabric types
             - brands: An array of detected or likely brands
-            - sustainability: A score from 1-10 rating the sustainability
+            - sustainability: An object with "score" (1-100) and "feedback" (string explanation)
             - recommendations: An array of 3-5 specific recommendations to improve the outfit
             
             Return ONLY the JSON object with no additional text.
@@ -140,20 +140,83 @@ class GeminiAnalyzer:
     @staticmethod
     def _mock_analysis_results():
         """Return mock analysis results for development"""
-        return {
-            'overallScore': 8.7,
-            'style': 'Smart Casual',
-            'colorHarmony': 9.2,
-            'fit': 8.5,
-            'occasion': ['Office', 'Casual Dinner', 'Weekend Outing'],
-            'bodyShape': 'Rectangle',
-            'fabrics': ['Cotton', 'Denim', 'Polyester'],
-            'brands': ['Unidentified', 'Likely H&M', 'Zara'],
-            'sustainability': 7.4,
-            'recommendations': [
+        import random
+        
+        # Generate varied mock data for each analysis
+        styles = ['Smart Casual', 'Business Casual', 'Formal', 'Casual', 'Sporty', 'Bohemian', 'Minimalist', 'Trendy']
+        occasions_list = [
+            ['Office', 'Business Meeting', 'Professional Event'],
+            ['Casual Dinner', 'Date Night', 'Social Gathering'],
+            ['Weekend Outing', 'Shopping', 'Brunch'],
+            ['Formal Event', 'Wedding Guest', 'Evening Party'],
+            ['Work from Home', 'Errands', 'Relaxed Day'],
+            ['Gym', 'Sports Activity', 'Active Lifestyle'],
+            ['Beach', 'Vacation', 'Summer Day'],
+            ['Concert', 'Night Out', 'Entertainment']
+        ]
+        body_shapes = ['Rectangle', 'Pear', 'Apple', 'Hourglass', 'Inverted Triangle', 'Athletic']
+        fabric_options = [
+            ['Cotton', 'Denim', 'Polyester'],
+            ['Silk', 'Wool', 'Cashmere'],
+            ['Linen', 'Rayon', 'Spandex'],
+            ['Leather', 'Suede', 'Canvas'],
+            ['Chiffon', 'Satin', 'Velvet']
+        ]
+        brand_options = [
+            ['Unidentified', 'Likely H&M', 'Zara'],
+            ['Nike', 'Adidas', 'Under Armour'],
+            ['Gap', 'Uniqlo', 'J.Crew'],
+            ['Designer Brand', 'Luxury Label', 'High-End'],
+            ['Vintage', 'Thrift Find', 'Local Brand']
+        ]
+        
+        recommendation_sets = [
+            [
                 "Consider adding a statement accessory to elevate the look.",
                 "The color palette works well together, but could benefit from a pop of color.",
                 "The fit is good, but the shirt could be slightly more tailored.",
                 "This outfit is versatile and appropriate for multiple casual settings."
+            ],
+            [
+                "The overall composition is strong, but try experimenting with different textures.",
+                "Consider swapping the shoes for something with more visual interest.",
+                "Adding a belt could help define the silhouette better.",
+                "This look could transition well from day to evening with minor adjustments."
+            ],
+            [
+                "The proportions work well for your body type.",
+                "Try incorporating more seasonal colors for better relevance.",
+                "The layering technique is effective but could be refined.",
+                "Consider the dress code requirements for your intended occasions."
+            ],
+            [
+                "Bold color choices show confidence in personal style.",
+                "The fit could be improved with some minor alterations.",
+                "This outfit demonstrates good understanding of current trends.",
+                "Adding complementary accessories would complete the look."
             ]
+        ]
+        
+        sustainability_feedbacks = [
+            'This outfit has moderate sustainability with mix of natural and synthetic materials.',
+            'High sustainability score due to natural fibers and likely longevity of pieces.',
+            'Lower sustainability due to fast fashion items, consider investing in quality pieces.',
+            'Good balance of trendy and timeless pieces for sustainable wardrobe building.',
+            'Excellent use of versatile pieces that can be styled multiple ways.'
+        ]
+        
+        return {
+            'overallScore': round(random.uniform(6.5, 9.5), 1),
+            'style': random.choice(styles),
+            'colorHarmony': random.randint(70, 95),
+            'fit': random.randint(75, 95),
+            'occasion': random.choice(occasions_list),
+            'bodyShape': random.choice(body_shapes),
+            'fabrics': random.choice(fabric_options),
+            'brands': random.choice(brand_options),
+            'sustainability': {
+                'score': random.randint(60, 90),
+                'feedback': random.choice(sustainability_feedbacks)
+            },
+            'recommendations': random.choice(recommendation_sets)
         }

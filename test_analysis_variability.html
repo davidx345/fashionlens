@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Variability Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; }
+        #results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>FashionLens Analysis Variability Test</h1>
+    <p>This page tests if multiple outfit analyses return varied results instead of identical data.</p>
+    
+    <button onclick="runTest()">Run Analysis Variability Test</button>
+    <button onclick="clearResults()">Clear Results</button>
+    
+    <div id="results"></div>
+
+    <script>
+        let testResults = [];
+
+        async function runTest() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Running test...</p>';
+            
+            try {
+                // Create a simple test image (1x1 pixel PNG)
+                const canvas = document.createElement('canvas');
+                canvas.width = 1;
+                canvas.height = 1;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, 1, 1);
+                
+                // Convert canvas to blob
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                
+                testResults = [];
+                
+                // Make 3 analysis requests
+                for (let i = 0; i < 3; i++) {
+                    const formData = new FormData();
+                    formData.append('images', blob, `test_outfit_${i}.png`);
+                    
+                    try {
+                        const response = await fetch('http://localhost:5000/api/analysis/upload', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            testResults.push(data.results);
+                            console.log(`Test ${i+1} results:`, data.results);
+                        } else {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                    } catch (error) {
+                        console.error(`Test ${i+1} failed:`, error);
+                        throw error;
+                    }
+                }
+                
+                // Analyze results
+                displayResults();
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="test-result error">
+                    <h3>❌ Test Failed</h3>
+                    <p>Error: ${error.message}</p>
+                    <p>Make sure both frontend and backend are running on ports 3000 and 5000.</p>
+                </div>`;
+            }
+        }
+
+        function displayResults() {
+            const resultsDiv = document.getElementById('results');
+            
+            if (testResults.length < 2) {
+                resultsDiv.innerHTML = '<div class="test-result error">Not enough results to compare</div>';
+                return;
+            }
+            
+            // Check if all results are identical
+            let allIdentical = true;
+            for (let i = 1; i < testResults.length; i++) {
+                if (JSON.stringify(testResults[i]) !== JSON.stringify(testResults[0])) {
+                    allIdentical = false;
+                    break;
+                }
+            }
+            
+            let html = '<h2>Test Results</h2>';
+            
+            if (allIdentical) {
+                html += `<div class="test-result error">
+                    <h3>❌ ISSUE CONFIRMED: All analysis results are identical!</h3>
+                    <p>This confirms the original problem - the backend is returning the same mock data for every analysis.</p>
+                </div>`;
+            } else {
+                html += `<div class="test-result success">
+                    <h3>✅ SUCCESS: Analysis results are varied!</h3>
+                    <p>The mock data generation is working correctly and returning different results.</p>
+                </div>`;
+            }
+            
+            // Show detailed results
+            html += '<h3>Detailed Results:</h3>';
+            testResults.forEach((result, index) => {
+                html += `<div class="test-result">
+                    <h4>Analysis ${index + 1}:</h4>
+                    <ul>
+                        <li><strong>Overall Score:</strong> ${result.overallScore}</li>
+                        <li><strong>Style:</strong> ${result.style}</li>
+                        <li><strong>Color Harmony:</strong> ${result.colorHarmony}</li>
+                        <li><strong>Fit:</strong> ${result.fit}</li>
+                        <li><strong>Body Shape:</strong> ${result.bodyShape}</li>
+                        <li><strong>Sustainability Score:</strong> ${result.sustainability?.score || 'N/A'}</li>
+                        <li><strong>Occasions:</strong> ${result.occasion?.join(', ') || 'N/A'}</li>
+                    </ul>
+                </div>`;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            testResults = [];
+        }
+    </script>
+</body>
+</html>

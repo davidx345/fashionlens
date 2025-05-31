@@ -61,14 +61,21 @@ def submit_feedback(current_user):
     data = request.get_json()
     
     # Validate input
-    if not data or 'recommendation_id' not in data or 'feedback' not in data:
-        return jsonify({'error': 'Missing required fields'}), 400
+    if not data or 'recommendationId' not in data or 'liked' not in data:
+        return jsonify({'error': 'Missing required fields: recommendationId and liked are required'}), 400
         
-    recommendation_id = data['recommendation_id']
-    feedback = data['feedback']
+    recommendation_id = data['recommendationId']
+    liked = data['liked']
+    comment = data.get('comment')
+    
+    # Construct feedback_data for the model
+    feedback_data = {
+        'liked': liked,
+        'comment': comment
+    }
     
     # Update recommendation feedback
-    success = Recommendation.update_feedback(recommendation_id, feedback)
+    success = Recommendation.update_feedback(recommendation_id, feedback_data) 
     
     if not success:
         return jsonify({'error': 'Failed to update feedback'}), 500

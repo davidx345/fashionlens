@@ -7,7 +7,7 @@ class User:
     """User model for authentication and profile management"""
     
     @staticmethod
-    def create(name, email, password):
+    def create(name, email, password, is_oauth_user=False, oauth_provider=None, oauth_provider_account_id=None):
         """Create a new user"""
         db = get_db()
         
@@ -28,7 +28,10 @@ class User:
                 'style_preferences': [],
                 'favorite_colors': [],
                 'disliked_styles': []
-            }
+            },
+            'is_oauth_user': is_oauth_user,
+            'oauth_provider': oauth_provider,
+            'oauth_provider_account_id': oauth_provider_account_id
         }
         
         # Insert user into database
@@ -37,6 +40,13 @@ class User:
         
         return serialize_doc(user)
     
+    @staticmethod
+    def find_by_email(email):
+        """Find a user by email"""
+        db = get_db()
+        user = db.users.find_one({'email': email})
+        return serialize_doc(user) if user else None
+
     @staticmethod
     def authenticate(email, password):
         """Authenticate user with email and password"""
@@ -48,6 +58,10 @@ class User:
         if not user:
             return None
             
+        # If user is an OAuth user, don't allow password authentication
+        if user.get('is_oauth_user', False):
+            return None # Or handle differently, e.g., return an error specific to OAuth users
+        
         # Check password
         if bcrypt.checkpw(password.encode('utf-8'), user['password']):
             return serialize_doc(user)
