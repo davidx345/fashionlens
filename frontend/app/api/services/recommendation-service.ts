@@ -1,32 +1,5 @@
 import axios, { AxiosError } from 'axios';
-
-// Define the base URL for your backend API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-
-// Create an Axios instance for API calls
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true, // Important for sending/receiving cookies
-});
-
-// Add a request interceptor to include the token in headers
-apiClient.interceptors.request.use(
-  (config) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+import apiClient from '../apiClient'; // Use the shared apiClient
 
 // Interface for a single item within an outfit recommendation
 export interface RecommendedItem {
@@ -62,7 +35,7 @@ interface ApiErrorResponse {
  */
 export const getOutfitRecommendations = async (count?: number): Promise<OutfitRecommendation[]> => {
   try {
-    const response = await apiClient.get<OutfitRecommendation[]>('/api/recommendations/outfits', {
+    const response = await apiClient.get<OutfitRecommendation[]>('/recommendations/outfits', {
       params: count ? { count } : {},
     });
     return response.data;
@@ -90,7 +63,8 @@ export const submitRecommendationFeedback = async (
   liked: boolean, 
   comment?: string
 ): Promise<{ message: string }> => {
-  try {    const response = await apiClient.post<{ message: string }>('/api/recommendations/feedback', {
+  try {
+    const response = await apiClient.post<{ message: string }>('/recommendations/feedback', {
       recommendationId,
       liked,
       comment,

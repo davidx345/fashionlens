@@ -107,7 +107,7 @@ interface ApiErrorResponse {
 export const loginUser = async (email: string, password: string): Promise<ApiUser> => {
   try {
     const response = await apiClient.post<AuthResponse>( // Use apiClient
-      `/api/auth/login`, // Endpoint is relative to baseURL, which already includes /api
+      `/auth/login`, // Endpoint is relative to baseURL, which already includes /api
       { email, password }
       // Headers and withCredentials are now handled by apiClient
     );

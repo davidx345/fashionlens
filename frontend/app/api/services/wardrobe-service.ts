@@ -28,7 +28,8 @@ interface ApiErrorResponse {
  * Fetches all wardrobe items for the current user.
  * @returns A promise that resolves with an array of wardrobe items.
  */
-export const getWardrobeItems = async (): Promise<WardrobeItem[]> => {  try {
+export const getWardrobeItems = async (): Promise<WardrobeItem[]> => {
+  try {
     // Use the shared apiClient which already includes /api in baseURL
     const response = await apiClient.get<WardrobeItem[]>('/wardrobe');
     return response.data;

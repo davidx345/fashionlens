@@ -35,7 +35,7 @@ export interface StyleTrendData {
 class DashboardService {
   async getAnalytics(): Promise<AnalyticsData> {
     try {
-      const response = await apiClient.get('/api/dashboard/analytics'); // apiClient handles baseURL and auth headers
+      const response = await apiClient.get('/dashboard/analytics'); // apiClient handles baseURL and auth headers
       return response.data;
     } catch (error) {
       console.error('Error fetching dashboard analytics:', error);
@@ -45,7 +45,7 @@ class DashboardService {
 
   async getRecentActivity(): Promise<RecentActivity[]> {
     try {
-      const response = await apiClient.get('/api/dashboard/recent-activity'); // apiClient handles baseURL and auth headers
+      const response = await apiClient.get('/dashboard/recent-activity'); // apiClient handles baseURL and auth headers
       return response.data;
     } catch (error) {
       console.error('Error fetching recent activity:', error);
@@ -55,7 +55,7 @@ class DashboardService {
 
   async getStyleTrends(): Promise<StyleTrendData[]> {
     try {
-      const response = await apiClient.get('/api/dashboard/style-trends'); // apiClient handles baseURL and auth headers
+      const response = await apiClient.get('/dashboard/style-trends'); // apiClient handles baseURL and auth headers
       return response.data;
     } catch (error) {
       console.error('Error fetching style trends:', error);

@@ -1,32 +1,5 @@
 import axios, { AxiosError } from 'axios';
-
-// Define the base URL for your backend API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-
-// Create an Axios instance for API calls
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    // 'Content-Type': 'application/json', // Will be overridden for FormData
-  },
-  withCredentials: true, // Important for sending/receiving cookies
-});
-
-// Add a request interceptor to include the token in headers
-apiClient.interceptors.request.use(
-  (config) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+import apiClient from '../apiClient'; // Use the shared apiClient
 
 // Interface for the core analysis results from the backend
 export interface AnalysisResultData {
@@ -89,9 +62,9 @@ interface ApiErrorResponse {
 export const analyzeOutfit = async (imageFile: File): Promise<UploadAnalysisResponse> => {
   const formData = new FormData();
   formData.append('images', imageFile, imageFile.name);
-
-  try {    // Corrected path: don't add /api since it's already in API_BASE_URL
-    const response = await apiClient.post<UploadAnalysisResponse>(`/api/analysis/upload`, formData, {
+  try {
+    // Use relative path since apiClient baseURL already includes /api
+    const response = await apiClient.post<UploadAnalysisResponse>('/analysis/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -117,8 +90,9 @@ export const analyzeOutfit = async (imageFile: File): Promise<UploadAnalysisResp
  * @param analysisId The ID of the analysis to fetch.
  * @returns A promise that resolves with the stored analysis data.
  */
-export const getAnalysisById = async (analysisId: string): Promise<StoredAnalysis> => {  try {
-    const response = await apiClient.get<StoredAnalysis>(`/api/analysis/${analysisId}`);
+export const getAnalysisById = async (analysisId: string): Promise<StoredAnalysis> => {
+  try {
+    const response = await apiClient.get<StoredAnalysis>(`/analysis/${analysisId}`);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
@@ -141,7 +115,8 @@ export const getAnalysisById = async (analysisId: string): Promise<StoredAnalysi
  * @returns A promise that resolves with an array of stored analysis data.
  */
 export const getAnalysisHistory = async (limit?: number): Promise<StoredAnalysis[]> => {
-  try {    const response = await apiClient.get<StoredAnalysis[]>(`/api/analysis/history`, {
+  try {
+    const response = await apiClient.get<StoredAnalysis[]>('/analysis/history', {
       params: limit ? { limit } : {},
     });
     return response.data;

@@ -1,32 +1,5 @@
 import axios, { AxiosError } from 'axios';
-
-// Define the base URL for your backend API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-
-// Create an Axios instance for API calls
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true, // Important for sending/receiving cookies
-});
-
-// Add a request interceptor to include the token in headers
-apiClient.interceptors.request.use(
-  (config) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+import apiClient from '../apiClient'; // Use the shared apiClient
 
 // Interface for User Profile data
 export interface UserProfile {
@@ -54,8 +27,9 @@ interface ApiErrorResponse {
  * Fetches the current user's profile.
  * @returns A promise that resolves with the user profile data.
  */
-export const getUserProfile = async (): Promise<UserProfile> => {  try {
-    const response = await apiClient.get<UserProfile>(`/api/user/profile`);
+export const getUserProfile = async (): Promise<UserProfile> => {
+  try {
+    const response = await apiClient.get<UserProfile>('/user/profile');
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
@@ -77,8 +51,9 @@ export const getUserProfile = async (): Promise<UserProfile> => {  try {
  * @param profileData Partial data to update the user profile.
  * @returns A promise that resolves with the updated user profile data.
  */
-export const updateUserProfile = async (profileData: Partial<UserProfile>): Promise<UserProfile> => {  try {
-    const response = await apiClient.put<UserProfile>(`/api/user/profile`, profileData);
+export const updateUserProfile = async (profileData: Partial<UserProfile>): Promise<UserProfile> => {
+  try {
+    const response = await apiClient.put<UserProfile>('/user/profile', profileData);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
@@ -100,8 +75,9 @@ export const updateUserProfile = async (profileData: Partial<UserProfile>): Prom
  * @param preferencesData The user preferences data.
  * @returns A promise that resolves with the updated user preferences.
  */
-export const updateUserPreferences = async (preferencesData: UserPreferences): Promise<UserPreferences> => {  try {
-    const response = await apiClient.put<UserPreferences>(`/api/user/preferences`, preferencesData);
+export const updateUserPreferences = async (preferencesData: UserPreferences): Promise<UserPreferences> => {
+  try {
+    const response = await apiClient.put<UserPreferences>('/user/preferences', preferencesData);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
