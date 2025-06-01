@@ -1,13 +1,23 @@
 from flask import Blueprint, request, jsonify
-from utils.auth import token_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.user import User
 
 user_bp = Blueprint('user', __name__)
 
 @user_bp.route('/profile', methods=['GET'])
-@token_required
-def get_profile(current_user):
+@jwt_required()
+def get_profile():
     """Get user profile"""
+    # Get current user from JWT
+    current_user_id = get_jwt_identity()
+    from utils.db import get_db
+    from bson import ObjectId
+    db = get_db()
+    current_user = db.users.find_one({'_id': ObjectId(current_user_id)})
+    
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+    
     return jsonify({
         'id': current_user['_id'],
         'name': current_user['name'],
@@ -16,9 +26,19 @@ def get_profile(current_user):
     }), 200
 
 @user_bp.route('/profile', methods=['PUT'])
-@token_required
-def update_profile(current_user):
+@jwt_required()
+def update_profile():
     """Update user profile"""
+    # Get current user from JWT
+    current_user_id = get_jwt_identity()
+    from utils.db import get_db
+    from bson import ObjectId
+    db = get_db()
+    current_user = db.users.find_one({'_id': ObjectId(current_user_id)})
+    
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+    
     data = request.get_json()
     
     # Validate input
@@ -42,9 +62,19 @@ def update_profile(current_user):
     }), 200
 
 @user_bp.route('/preferences', methods=['PUT'])
-@token_required
-def update_preferences(current_user):
+@jwt_required()
+def update_preferences():
     """Update user style preferences"""
+    # Get current user from JWT
+    current_user_id = get_jwt_identity()
+    from utils.db import get_db
+    from bson import ObjectId
+    db = get_db()
+    current_user = db.users.find_one({'_id': ObjectId(current_user_id)})
+    
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+    
     data = request.get_json()
     
     # Validate input

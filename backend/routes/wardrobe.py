@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, current_app
 import os
 import uuid
 from werkzeug.utils import secure_filename
-from utils.auth import token_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.wardrobe import WardrobeItem
 
 wardrobe_bp = Blueprint('wardrobe', __name__)
@@ -14,17 +14,37 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @wardrobe_bp.route('', methods=['GET'])
-@token_required
-def get_wardrobe(current_user):
+@jwt_required()
+def get_wardrobe():
     """Get all wardrobe items for current user"""
+    # Get current user from JWT
+    current_user_id = get_jwt_identity()
+    from utils.db import get_db
+    from bson import ObjectId
+    db = get_db()
+    current_user = db.users.find_one({'_id': ObjectId(current_user_id)})
+    
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+    
     items = WardrobeItem.get_by_user(current_user['_id'])
     
     return jsonify(items), 200
 
 @wardrobe_bp.route('', methods=['POST'])
-@token_required
-def add_item(current_user):
+@jwt_required()
+def add_item():
     """Add a new wardrobe item"""
+    # Get current user from JWT
+    current_user_id = get_jwt_identity()
+    from utils.db import get_db
+    from bson import ObjectId
+    db = get_db()
+    current_user = db.users.find_one({'_id': ObjectId(current_user_id)})
+    
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+    
     # Check if request has form data
     if not request.form:
         return jsonify({'error': 'No form data provided'}), 400
@@ -79,9 +99,19 @@ def add_item(current_user):
     return jsonify(item), 201
 
 @wardrobe_bp.route('/<item_id>', methods=['GET'])
-@token_required
-def get_item(current_user, item_id):
+@jwt_required()
+def get_item(item_id):
     """Get wardrobe item by ID"""
+    # Get current user from JWT
+    current_user_id = get_jwt_identity()
+    from utils.db import get_db
+    from bson import ObjectId
+    db = get_db()
+    current_user = db.users.find_one({'_id': ObjectId(current_user_id)})
+    
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+    
     item = WardrobeItem.get_by_id(item_id)
     
     if not item:
@@ -94,9 +124,19 @@ def get_item(current_user, item_id):
     return jsonify(item), 200
 
 @wardrobe_bp.route('/<item_id>', methods=['PUT'])
-@token_required
-def update_item(current_user, item_id):
+@jwt_required()
+def update_item(item_id):
     """Update wardrobe item"""
+    # Get current user from JWT
+    current_user_id = get_jwt_identity()
+    from utils.db import get_db
+    from bson import ObjectId
+    db = get_db()
+    current_user = db.users.find_one({'_id': ObjectId(current_user_id)})
+    
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+    
     # Get item
     item = WardrobeItem.get_by_id(item_id)
     
@@ -160,9 +200,19 @@ def update_item(current_user, item_id):
     return jsonify(updated_item), 200
 
 @wardrobe_bp.route('/<item_id>', methods=['DELETE'])
-@token_required
-def delete_item(current_user, item_id):
+@jwt_required()
+def delete_item(item_id):
     """Delete wardrobe item"""
+    # Get current user from JWT
+    current_user_id = get_jwt_identity()
+    from utils.db import get_db
+    from bson import ObjectId
+    db = get_db()
+    current_user = db.users.find_one({'_id': ObjectId(current_user_id)})
+    
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+    
     # Get item
     item = WardrobeItem.get_by_id(item_id)
     
