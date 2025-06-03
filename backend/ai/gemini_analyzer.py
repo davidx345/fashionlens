@@ -61,7 +61,7 @@ class GeminiAnalyzer:
             """
             
             # Prepare request to Gemini API
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key={api_key}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
             
             payload = {
                 "contents": [

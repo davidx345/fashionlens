@@ -3,7 +3,6 @@
 import { SessionProvider } from "next-auth/react"; // Import SessionProvider
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
-import { BackButton } from "@/components/ui/back-button";
 import { usePathname } from "next/navigation";
 import { useSession } from "@/app/hooks/useSession";
 import { useEffect } from "react";
@@ -27,9 +26,6 @@ export default function ClientLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const showBackButton = pathname !== "/" && !pathname.startsWith("/dashboard");
-
   return (
     <SessionProvider>
       <ThemeProvider
@@ -39,11 +35,6 @@ export default function ClientLayout({
         disableTransitionOnChange
       >
         <SessionManager>
-          {showBackButton && (
-            <div className="fixed top-4 left-4 z-50">
-              <BackButton className="border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white" />
-            </div>
-          )}
           {children}
         </SessionManager>
       </ThemeProvider>

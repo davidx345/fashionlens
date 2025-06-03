@@ -61,7 +61,15 @@ interface ApiErrorResponse {
  */
 export const analyzeOutfit = async (imageFile: File): Promise<UploadAnalysisResponse> => {
   const formData = new FormData();
-  formData.append('images', imageFile, imageFile.name);
+  
+  // Create a new File object from the original to ensure it's a proper File instance
+  // This fixes the "Failed to execute 'append' on 'FormData': parameter 2 is not of type 'Blob'" error
+  const cleanFile = new File([imageFile], imageFile.name, {
+    type: imageFile.type,
+    lastModified: imageFile.lastModified,
+  });
+  
+  formData.append('images', cleanFile, cleanFile.name);
   try {
     // Use relative path since apiClient baseURL already includes /api
     const response = await apiClient.post<UploadAnalysisResponse>('/analysis/upload', formData, {

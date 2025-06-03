@@ -18,7 +18,7 @@ import {
 import { Input } from "@/src/components/ui/input"; // Corrected path
 import { Label } from "@/src/components/ui/label"; // Corrected path
 import { Separator } from "@/components/ui/separator";
-import { Eye, EyeOff, LogIn, Mail, LockKeyhole, UserPlus, Chrome, Apple } from "lucide-react";
+import { Eye, EyeOff, LogIn, Mail, LockKeyhole, UserPlus, Chrome, Apple, ArrowLeft } from "lucide-react";
 import useStore from "@/store/useStore";
 import { loginUser } from "@/app/api/services/auth-service"; // Import the actual API service
 import { signIn } from "next-auth/react"; // Import signIn from next-auth/react
@@ -96,9 +96,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-slate-900 p-4">
-      <Card className="w-full max-w-md bg-card shadow-2xl border-border/50">
-        <CardHeader className="text-center">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-slate-900 p-4">      <Card className="w-full max-w-md bg-card shadow-2xl border-border/50">
+        <CardHeader className="text-center relative">
+          {/* Back Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute left-4 top-4 text-muted-foreground hover:text-foreground"
+            onClick={() => router.back()}
+            disabled={isLoading}
+            aria-label="Go back"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 ring-4 ring-primary/20">
             <LogIn className="h-8 w-8 text-primary" />
           </div>
@@ -186,12 +197,11 @@ export default function LoginPage() {
             <div className="flex-grow border-t border-border/50"></div>
           </div>
 
-          <div className="space-y-3">
-            <Button 
+          <div className="space-y-3">            <Button 
               variant="outline" 
               className="w-full h-10 border-border/70 hover:bg-muted/50" 
               disabled={isLoading}
-              onClick={handleGoogleSignIn} // Add onClick handler
+              onClick={() => alert("Coming soon!")}
             >
               <Chrome className="mr-2 h-5 w-5" /> Continue with Google
             </Button>
@@ -199,7 +209,7 @@ export default function LoginPage() {
               variant="outline" 
               className="w-full h-10 border-border/70 hover:bg-muted/50" 
               disabled={isLoading}
-              onClick={() => alert("Apple Sign-In not implemented yet.")}
+              onClick={() => alert("Coming soon!")}
             >
               <Apple className="mr-2 h-5 w-5" /> Continue with Apple
             </Button>

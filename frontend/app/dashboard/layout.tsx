@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import useStore from "@/store/useStore";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle"; // Import ThemeToggle
 import { logoutUser } from "@/app/api/services/auth-service"; // Import logoutUser
 
@@ -31,12 +31,18 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, user, setUser, setAuthenticated } = useStore();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.replace("/login");
     }
   }, [isAuthenticated, router]);
+
+  // Auto-close mobile nav when route changes
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname]);
 
   const handleLogout = async () => {
     try {
@@ -89,12 +95,10 @@ export default function DashboardLayout({
               Logout
             </Button>
           </div>        </div>
-      </aside>
-      
-      {/* Main Content Area */}
+      </aside>        {/* Main Content Area */}
       <div className="flex flex-col md:ml-[220px] lg:ml-[280px] pt-16 md:pt-0">
-        <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-          <Sheet>
+          <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+          <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="outline"
@@ -110,6 +114,7 @@ export default function DashboardLayout({
                 <Link
                   href="/dashboard"
                   className="flex items-center gap-2 text-lg font-semibold mb-4 transition-transform hover:scale-105 duration-200"
+                  onClick={() => setMobileNavOpen(false)}
                 >
                   <Package2 className="h-6 w-6 text-primary" />
                   {user ? (
@@ -126,6 +131,7 @@ export default function DashboardLayout({
                       "flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-all hover:scale-105 duration-200",
                       pathname === item.href && "bg-muted text-foreground"
                     )}
+                    onClick={() => setMobileNavOpen(false)}
                   >
                     <item.icon className="h-5 w-5" />
                     {item.label}
@@ -136,7 +142,14 @@ export default function DashboardLayout({
                 <div className="mb-2">
                   <ThemeToggle />
                 </div>
-                <Button variant="ghost" className="w-full justify-start transition-transform hover:scale-105 duration-200" onClick={handleLogout}>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start transition-transform hover:scale-105 duration-200" 
+                  onClick={() => {
+                    setMobileNavOpen(false);
+                    handleLogout();
+                  }}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </Button>

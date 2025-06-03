@@ -7,22 +7,7 @@ import { ArrowUpRight, Shirt, FolderKanban, Lightbulb, Activity, Users, DollarSi
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import dashboardService, { AnalyticsData, RecentActivity, StyleTrendData } from "@/app/api/services/dashboard-service";
-
-// Placeholder for chart component - you'd replace this with an actual chart library
-const PlaceholderChart = ({data}: {data: StyleTrendData[]}) => (
-  <div className="w-full h-64 bg-muted/50 rounded-lg flex items-center justify-center text-sm text-muted-foreground">
-    {data.length > 0 ? (
-      <div className="text-center">
-        <p>Style Trend Data Available</p>
-        <p className="text-xs mt-1">
-          {data.length} months of data • Avg Score: {data.reduce((acc, item) => acc + item.score, 0) / data.length}
-        </p>
-      </div>
-    ) : (
-      <p>No trend data available yet</p>
-    )}
-  </div>
-);
+import { StyleTrendsChart } from "@/components/ui/style-trends-chart";
 
 // Helper function to get activity icon
 const getActivityIcon = (type: string) => {
@@ -232,15 +217,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>      {/* Style Trends Chart */}
-      <Card className="hover:shadow-lg transition-shadow duration-300">
-        <CardHeader>
-          <CardTitle>Style Trends</CardTitle>
-          <CardDescription>Your outfit analysis scores over time.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <PlaceholderChart data={styleTrends} />
-        </CardContent>
-      </Card>
+      <StyleTrendsChart data={styleTrends} />
 
     </div>
   );

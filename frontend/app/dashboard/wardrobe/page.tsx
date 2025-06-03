@@ -59,7 +59,6 @@ export default function WardrobePage() {
   const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   // const [editingItem, setEditingItem] = useState<WardrobeItem | null>(null); // For edit functionality
-
   const fetchItems = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -76,7 +75,7 @@ export default function WardrobePage() {
 
   useEffect(() => {
     fetchItems();
-  }, [fetchItems]);
+  }, []); // Remove fetchItems dependency to prevent infinite loop
 
   const handleAddItemSuccess = () => {
     setIsAddModalOpen(false);
