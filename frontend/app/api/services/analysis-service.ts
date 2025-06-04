@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import apiClient from '../apiClient'; // Use the shared apiClient
 
 // Interface for the core analysis results from the backend

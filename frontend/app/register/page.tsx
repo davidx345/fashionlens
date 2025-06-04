@@ -97,16 +97,14 @@ export default function SignupPage() {
 		try {
 			// Call registerUser with name, email and password
 			const registeredUserData: ApiUser = await registerUser(data.name, data.email, data.password);
-			console.log("Registration successful:", registeredUserData);
-
-			// Set user and authentication state in Zustand store
+			console.log("Registration successful:", registeredUserData);			// Set user and authentication state in Zustand store
 			// The backend's registerUser service now returns the ApiUser object directly
 			setUser(registeredUserData);
 			setAuthenticated(true);
 			router.push("/dashboard"); // Redirect to dashboard
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Registration failed:", error);
-			setApiError(error.message || "An unexpected error occurred during registration.");
+			setApiError((error as Error).message || "An unexpected error occurred during registration.");
 		} finally {
 			setIsLoading(false);
 		}

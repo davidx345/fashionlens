@@ -1,6 +1,6 @@
-import { AxiosError } from 'axios'; // Import AxiosError directly
 import useStore from '@/store/useStore'; // Import Zustand store
-import apiClient, { API_BASE_URL } from '../apiClient'; // Import the shared apiClient and API_BASE_URL
+import apiClient from '../apiClient'; // Import the shared apiClient
+import { AxiosError } from 'axios'; // Import AxiosError
 
 // Determine the base URL for the API.
 // If NEXT_PUBLIC_API_URL is set in the environment, use it.
@@ -293,8 +293,7 @@ export const initializeSession = async (): Promise<void> => {
       useStore.getState().setToken(accessToken);
       try {
         await checkSession();
-        return;
-      } catch (error) {
+        return;      } catch {
         // Access token might be expired, try refresh
         console.log('Access token expired, attempting refresh...');
       }

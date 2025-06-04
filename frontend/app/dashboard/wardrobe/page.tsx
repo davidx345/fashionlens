@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Trash2, Edit3, AlertTriangle, Loader2, ImageOff } from 'lucide-react';
+import { PlusCircle, Trash2, AlertTriangle, Loader2, ImageOff } from 'lucide-react';
 import { getWardrobeItems, deleteWardrobeItem, WardrobeItem } from '@/app/api/services/wardrobe-service';
 import AddItemForm from '@/components/add-item-form'; // To be created
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import Image from 'next/image'; 
 
 // Placeholder for WardrobeItemCard if not created in a separate file yet
-const WardrobeItemCard = ({ item, onDelete, onEdit }: { item: WardrobeItem, onDelete: (itemId: string) => void, onEdit: (item: WardrobeItem) => void }) => {
+const WardrobeItemCard = ({ item, onDelete }: { item: WardrobeItem, onDelete: (itemId: string) => void }) => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
   // Check both imageUrl and image fields (backend uses 'image')
   const imageField = item.imageUrl || item.image;
@@ -18,13 +18,12 @@ const WardrobeItemCard = ({ item, onDelete, onEdit }: { item: WardrobeItem, onDe
 
   return (
     <Card className="w-full overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <CardHeader className="p-0 relative aspect-square">
-        {imageField ? (
+      <CardHeader className="p-0 relative aspect-square">        {imageField ? (
           <Image 
             src={fullImageUrl} 
             alt={item.name} 
-            layout="fill" 
-            objectFit="cover" 
+            fill
+            style={{ objectFit: 'cover' }}
             className="bg-muted"
             onError={(e) => (e.currentTarget.src = '/placeholder.svg')} // Fallback placeholder
           />
@@ -65,9 +64,8 @@ export default function WardrobePage() {
     setError(null);
     try {
       const fetchedItems = await getWardrobeItems();
-      setItems(fetchedItems);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch wardrobe items.");
+      setItems(fetchedItems);    } catch (err: unknown) {
+      setError((err as Error).message || "Failed to fetch wardrobe items.");
       console.error("Failed to fetch items:", err);
     } finally {
       setIsLoading(false);
@@ -87,9 +85,8 @@ export default function WardrobePage() {
     if (!confirm("Are you sure you want to delete this item?")) return;
     try {
       await deleteWardrobeItem(itemId);
-      setItems(prevItems => prevItems.filter(item => item._id !== itemId));
-    } catch (err: any) {
-      setError(err.message || "Failed to delete item.");
+      setItems(prevItems => prevItems.filter(item => item._id !== itemId));    } catch (err: unknown) {
+      setError((err as Error).message || "Failed to delete item.");
       console.error("Failed to delete item:", err);
     }
   };
@@ -122,7 +119,7 @@ export default function WardrobePage() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px] md:max-w-lg">
             <DialogHeader>
-              <DialogTitle>{/*editingItem ? "Edit Item" :*/} "Add New Wardrobe Item"</DialogTitle>
+              <DialogTitle>&quot;Add New Wardrobe Item&quot;</DialogTitle>
               <DialogDescription>
                 Fill in the details below to add a new item to your wardrobe.
               </DialogDescription>
@@ -174,12 +171,10 @@ export default function WardrobePage() {
 
       {!isLoading && !error && items.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {items.map(item => (
-            <WardrobeItemCard 
+          {items.map(item => (            <WardrobeItemCard 
               key={item._id} 
               item={item} 
               onDelete={handleDeleteItem}
-              onEdit={() => {}} // Placeholder for edit
             />
           ))}
         </div>

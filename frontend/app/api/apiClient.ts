@@ -25,8 +25,8 @@ const apiClient = axios.create({
 // Track if we're currently refreshing to prevent multiple refresh attempts
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (value?: any) => void;
-  reject: (error?: any) => void;
+  resolve: (value?: unknown) => void;
+  reject: (error?: unknown) => void;
 }> = [];
 
 // Add a request interceptor to include the token in headers

@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowUpRight, Shirt, FolderKanban, Lightbulb, Activity, Users, DollarSign } from "lucide-react";
+import { ArrowUpRight, Shirt, FolderKanban, Lightbulb, Activity, Users } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import dashboardService, { AnalyticsData, RecentActivity, StyleTrendData } from "@/app/api/services/dashboard-service";
@@ -203,7 +203,7 @@ export default function DashboardPage() {
         <Card className="lg:col-span-2 hover:shadow-lg transition-shadow duration-300">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>What you've been up to lately.</CardDescription>          </CardHeader>
+            <CardDescription>What you&apos;ve been up to lately.</CardDescription>          </CardHeader>
           <CardContent>
             <ul className="space-y-4">
               {recentActivity.length > 0 ? (

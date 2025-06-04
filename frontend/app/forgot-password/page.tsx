@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
     resolver: zodResolver(forgotPasswordSchema),
   });
 
-  const onSubmit: SubmitHandler<ForgotPasswordFormInputs> = async (data) => {
+  const onSubmit: SubmitHandler<ForgotPasswordFormInputs> = async () => {
     setIsLoading(true);
     setApiError(null);
     setIsSuccess(false);
@@ -50,10 +50,9 @@ export default function ForgotPasswordPage() {
       // await requestPasswordReset(data.email); // Call the actual API service
       // For now, simulate success
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      setIsSuccess(true);
-    } catch (error: any) {
+      setIsSuccess(true);    } catch (error: unknown) {
       const errorMessage =
-        error.message ||
+        (error as Error).message ||
         "Failed to send password reset email. Please try again.";
       setApiError(errorMessage);
       console.error("Forgot password API error:", error);
@@ -73,7 +72,7 @@ export default function ForgotPasswordPage() {
             Forgot Your Password?
           </CardTitle>
           <CardDescription className="text-muted-foreground pt-1">
-            No worries! Enter your email address below and we'll send you a link
+            No worries! Enter your email address below and we&apos;ll send you a link
             to reset it.
           </CardDescription>
         </CardHeader>

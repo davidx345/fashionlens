@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import Link, { LinkProps } from "next/link";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, MountainIcon, LogOut, UserCircle, LogIn, UserPlus } from "lucide-react"; // Added LogOut, UserCircle, LogIn, UserPlus
 import { Button } from "@/components/ui/button";
@@ -12,14 +12,21 @@ import { cn } from "@/lib/utils";
 import useStore from "@/store/useStore"; // Import useStore
 import { logoutUser as apiLogoutUser } from "@/app/api/services/auth-service"; // Import logoutUser
 
-// Default nav items, can be overridden by props if needed in the future
-const defaultNavItems = [
-	{ href: "/dashboard", title: "Dashboard" },
-	{ href: "/dashboard/analyze", title: "Outfit Analyzer" },
-	{ href: "/dashboard/wardrobe", title: "Wardrobe" },
-	{ href: "/dashboard/recommendations", title: "Recommendations" },
-	{ href: "/pricing", title: "Pricing" },
-	// { href: "/about", title: "About" }, // Assuming 'About' might be in a different section or footer
+// Default nav items for authenticated users
+const authenticatedNavItems = [
+	{ href: "/dashboard", title: "Dashboard", icon: undefined, disabled: false },
+	{ href: "/dashboard/analyze", title: "Outfit Analyzer", icon: undefined, disabled: false },
+	{ href: "/dashboard/wardrobe", title: "Wardrobe", icon: undefined, disabled: false },
+	{ href: "/dashboard/recommendations", title: "Recommendations", icon: undefined, disabled: false },
+	{ href: "/pricing", title: "Pricing", icon: undefined, disabled: false },
+	{ href: "/about", title: "About", icon: undefined, disabled: false },
+];
+
+// Default nav items for non-authenticated users
+const publicNavItems = [
+	{ href: "/", title: "Home", icon: undefined, disabled: false },
+	{ href: "/pricing", title: "Pricing", icon: undefined, disabled: false },
+	{ href: "/about", title: "About", icon: undefined, disabled: false },
 ];
 
 interface MobileNavProps {
@@ -32,11 +39,15 @@ interface MobileNavProps {
 	// Add other props like user status for conditional rendering of login/logout
 }
 
-export function MobileNav({ navItems = defaultNavItems }: MobileNavProps) {
+export function MobileNav({ navItems }: MobileNavProps) {
 	const [isOpen, setIsOpen] = React.useState(false);
 	const pathname = usePathname();
-	const router = useRouter(); // Add useRouter
-	const { isAuthenticated, user, logout } = useStore(); // Get auth state and logout action
+	const router = useRouter();
+	const { isAuthenticated, user, logout } = useStore();
+
+	// Use appropriate nav items based on authentication state
+	const defaultNavItems = isAuthenticated ? authenticatedNavItems : publicNavItems;
+	const currentNavItems = navItems || defaultNavItems;
 
 	const toggleSheet = () => setIsOpen(!isOpen);
 
@@ -137,13 +148,11 @@ export function MobileNav({ navItems = defaultNavItems }: MobileNavProps) {
 									<span className="sr-only">Close menu</span>
 								</Button>
 								*/}
-							</div>
-
-							<motion.nav
+							</div>							<motion.nav
 								variants={navListVariants}
 								className="flex-grow px-3 py-5 space-y-1.5 overflow-y-auto"
 							>
-								{navItems.map(
+								{currentNavItems.map(
 									(item) =>
 										!item.disabled &&
 										item.href && (

@@ -14,7 +14,6 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
-import { Button } from "./ui/button"
 import { ThemeToggle } from "./theme-toggle" // Corrected import name
 
 export function MainNav() {
@@ -33,18 +32,16 @@ export function MainNav() {
             <NavigationMenuContent>
               <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                 <li className="row-span-3">
-                  <NavigationMenuLink asChild>
-                    <a
+                  <NavigationMenuLink asChild>                    <Link
                       className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
                       href="/"
                     >
                       <div className="mb-2 mt-4 text-lg font-medium">
                         FashionLens
-                      </div>
-                      <p className="text-sm leading-tight text-muted-foreground">
+                      </div>                      <p className="text-sm leading-tight text-muted-foreground">
                         AI-powered outfit analysis, wardrobe management, and style recommendations.
                       </p>
-                    </a>
+                    </Link>
                   </NavigationMenuLink>
                 </li>
                 <ListItem href="/dashboard/analyze" title="Outfit Analyzer">

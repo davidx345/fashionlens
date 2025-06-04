@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from 'react';
-import { useDropzone } from 'react-dropzone';
+import { useDropzone, FileRejection } from 'react-dropzone';
 import { UploadCloud, FileImage, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -42,10 +42,8 @@ export function FileUploader({
       setUploadProgress(0);
       setInternalError(null);
     }
-  }, [parentFile]);
-
-  const onDrop = useCallback(
-    (acceptedFiles: File[], rejectedFiles: any[]) => {
+  }, [parentFile]);  const onDrop = useCallback(
+    (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       setInternalError(null);
       setUploadProgress(0);
 

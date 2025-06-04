@@ -7,7 +7,7 @@ import useStore from '@/store/useStore';
 interface UseSessionReturn {
   isLoading: boolean;
   isAuthenticated: boolean;
-  user: any;
+  user: unknown;
   checkSessionValidity: () => Promise<void>;
   logout: () => Promise<void>;
 }

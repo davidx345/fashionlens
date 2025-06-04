@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Home, LogOut, Menu, Package2, Settings, Shirt, ShoppingBag, Users, Lightbulb, BarChart3, FolderKanban, UserCircle } from "lucide-react";
+import { Home, LogOut, Menu, Package2, Settings, Shirt, Lightbulb, FolderKanban, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,6 @@ import { ThemeToggle } from "@/components/theme-toggle"; // Import ThemeToggle
 import { logoutUser } from "@/app/api/services/auth-service"; // Import logoutUser
 
 // Re-using MobileNav structure but adapting for dashboard links
-import { MobileNav } from "@/components/mobile-nav"; // We might need to adapt this or create a new one
 
 const navItems = [
   { href: "/dashboard", label: "Overview", icon: Home },
@@ -28,9 +27,8 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const { isAuthenticated, user, setUser, setAuthenticated } = useStore();
+  const pathname = usePathname();  const router = useRouter();
+  const { isAuthenticated, user } = useStore();
 
   useEffect(() => {
     if (!isAuthenticated) {

@@ -6,24 +6,14 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MainNav } from '@/components/main-nav';
 import { MobileNav } from '@/components/mobile-nav';
-import { 
-  Sparkles, 
-  Users, 
-  Target, 
-  Heart, 
-  ArrowRight,
-  Mail,
-  Phone,
-  Quote
-} from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 export default function AboutPage() {
   const heroRef = useRef<HTMLDivElement>(null);
-  const storyRef = useRef<HTMLDivElement>(null);
+  
   // Intersection Observer for animations
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -589,9 +579,8 @@ export default function AboutPage() {
                   <svg className="w-8 h-8 text-blue-500 mx-auto opacity-50" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h4v10h-10z"/>
                   </svg>
-                </div>
-                <p className="mb-4 italic text-muted-foreground leading-relaxed">
-                  "{testimonial.quote}"
+                </div>                <p className="mb-4 italic text-muted-foreground leading-relaxed">
+                  &ldquo;{testimonial.quote}&rdquo;
                 </p>
                 <div className="flex items-center justify-center space-x-1 mb-2">
                   {[...Array(5)].map((_, i) => (
@@ -612,9 +601,8 @@ export default function AboutPage() {
       {/* Contact Us Section */}
       <section className="text-center animate-on-scroll px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto max-w-6xl">
-        <h2 className="mb-4 text-3xl font-bold section-title">Get in Touch</h2>
-        <p className="mb-6 text-muted-foreground subtitle-shimmer">
-          We'd love to hear from you! Reach out with any questions or inquiries.
+        <h2 className="mb-4 text-3xl font-bold section-title">Get in Touch</h2>        <p className="mb-6 text-muted-foreground subtitle-shimmer">
+          We&apos;d love to hear from you! Reach out with any questions or inquiries.
         </p>
         <div className="flex justify-center space-x-6">
           <a

@@ -2,33 +2,23 @@
 
 import React, { useEffect, useRef } from 'react';
 import Link from "next/link";
+import Image from "next/image";
 import { motion, useInView, useAnimation } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { MainNav } from "@/components/main-nav";
 import { MobileNav } from "@/components/mobile-nav";
 import {
   Sparkles,
-  Shirt,
   Lightbulb,
-  Users,
-  DollarSign,
   ArrowRight,
   CheckCircle,
   UploadCloud,
   Palette,
   HeartHandshake,
-  Eye,
-  ThumbsUp,
-  TrendingUp,
-  Zap,
-  ShieldCheck,
   Star,
-  Award,
-  MessageSquare,
-  Play,
   Facebook,
   Twitter,
   Instagram,
@@ -259,12 +249,13 @@ export default function Home() {
                 ease: "linear"
               }}
             />
-          </div>
-            <div className="absolute inset-0 z-0">
-            <img 
+          </div>          <div className="absolute inset-0 z-0">
+            <Image 
               src="/hero-background.jpg" 
               alt="Fashion background"
-              className="w-full h-full object-cover"
+              fill
+              style={{ objectFit: 'cover' }}
+              priority
             />
           </div>
           <div className="absolute inset-0 z-0 bg-gradient-to-br from-black/70 via-black/50 to-black/70"></div>
@@ -523,7 +514,7 @@ export default function Home() {
                           </motion.div>
                         ))}
                       </div>
-                      <p className="text-muted-foreground mb-6 italic">"{testimonial.quote}"</p>
+                      <p className="text-muted-foreground mb-6 italic">&quot;{testimonial.quote}&quot;</p>
                       <div className="flex items-center">
                         <div className="h-12 w-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white font-semibold text-sm mr-4">
                           {testimonial.avatar}

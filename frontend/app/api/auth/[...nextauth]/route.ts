@@ -1,14 +1,13 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import type { NextAuthOptions, User as NextAuthUser, Account, Profile } from "next-auth";
-import type { JWT } from "next-auth/jwt";
-import { createUserFromOAuth } from '@/app/api/services/auth-service'; // Import the actual service
+import type { NextAuthOptions, User as NextAuthUser } from "next-auth";
+import { createUserFromOAuth } from '@/app/api/services/auth-service';
 
 interface ExtendedUser extends NextAuthUser {
   id: string;
 }
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -45,11 +44,10 @@ export const authOptions: NextAuthOptions = {
           console.error("Error during OAuth sign-in with custom backend:", error);
           return false; // Prevent sign in if there's an error with your backend
         }
-      }
-      return false; // Deny sign in for other providers or if essential info is missing
+      }      return false; // Deny sign in for other providers or if essential info is missing
     },
-    async jwt({ token, user, account, profile }) {
-      // console.log("NextAuth JWT callback:", { token, user, account, profile });
+    async jwt({ token, user, account }) {
+      // console.log("NextAuth JWT callback:", { token, user, account });
       // Persist the OAuth access_token and or the user id to the token right after signin
       if (account && user) {
         token.accessToken = account.access_token;
@@ -66,8 +64,8 @@ export const authOptions: NextAuthOptions = {
       }
       return token;
     },
-    async session({ session, token, user }) {
-      // console.log("NextAuth session callback:", { session, token, user });
+    async session({ session, token }) {
+      // console.log("NextAuth session callback:", { session, token });
       // Send properties to the client, like an access_token and user id from the token.
       if (session.user) {
         (session.user as ExtendedUser).id = token.id as string;
@@ -78,19 +76,15 @@ export const authOptions: NextAuthOptions = {
 
       }
       // session.accessToken = token.accessToken; // If you need to expose the provider's access token
-      return session;
-    },
+      return session;    },
   },
   // Optional: Add a secret for production environments
   secret: process.env.NEXTAUTH_SECRET,
-  // Optional: Configure pages if you have custom sign-in, sign-out, error pages
-  // pages: {
-  //   signIn: '/login',
-  //   // signOut: '/auth/signout',
-  //   // error: '/auth/error', // Error code passed in query string as ?error=
-  //   // verifyRequest: '/auth/verify-request', // (used for email/passwordless login)
-  //   // newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out to disable)
-  // }
+  // Configure custom pages for proper redirects
+  pages: {
+    signIn: '/login',
+    error: '/login', // Redirect to login on error
+  }
 };
 
 const handler = NextAuth(authOptions);

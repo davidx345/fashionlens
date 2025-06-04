@@ -15,10 +15,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/src/components/ui/input"; // Corrected path
-import { Label } from "@/src/components/ui/label"; // Corrected path
-import { Separator } from "@/components/ui/separator";
-import { Eye, EyeOff, LogIn, Mail, LockKeyhole, UserPlus, Chrome, Apple } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Eye, EyeOff, LogIn, Mail, LockKeyhole, Chrome, Apple } from "lucide-react";
 import useStore from "@/store/useStore";
 import { loginUser } from "@/app/api/services/auth-service"; // Import the actual API service
 import { signIn } from "next-auth/react"; // Import signIn from next-auth/react
@@ -59,9 +58,8 @@ export default function LoginPage() {
       const user = await loginUser(data.email, data.password);
       setUser(user); // user object from API response
       setAuthenticated(true);
-      router.push("/dashboard");
-    } catch (error: any) {
-      const errorMessage = error.message || "Login failed. Please try again.";
+      router.push("/dashboard");    } catch (error: unknown) {
+      const errorMessage = (error as Error).message || "Login failed. Please try again.";
       setApiError(errorMessage);
       console.error("Login API error:", error);
     } finally {
@@ -79,9 +77,8 @@ export default function LoginPage() {
         setIsLoading(false);
       } else if (result?.url) {
         // NextAuth.js handles session; useEffect will redirect.
-      }
-    } catch (error: any) {
-      setApiError(error.message || "An unexpected error occurred during Google sign-in.");
+      }    } catch (error: unknown) {
+      setApiError((error as Error).message || "An unexpected error occurred during Google sign-in.");
       setIsLoading(false);
     }
   };

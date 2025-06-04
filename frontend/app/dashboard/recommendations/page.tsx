@@ -105,9 +105,8 @@ export default function RecommendationsPage() {
     setError(null);
     try {
       const fetchedRecommendations = await getOutfitRecommendations();
-      setRecommendations(fetchedRecommendations);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch recommendations.");
+      setRecommendations(fetchedRecommendations);    } catch (err: unknown) {
+      setError((err as Error).message || "Failed to fetch recommendations.");
       console.error("Failed to fetch recommendations:", err);
     } finally {
       setIsLoading(false);
@@ -124,10 +123,9 @@ export default function RecommendationsPage() {
     try {
       await submitRecommendationFeedback(recommendationId, liked);
       setRecommendations(prev => prev.filter(rec => rec.id !== recommendationId)); 
-      setFeedbackMessage({ type: "success", message: `Feedback submitted for ${liked ? "liked" : "disliked"} item!` });
-    } catch (err: any) {
+      setFeedbackMessage({ type: "success", message: `Feedback submitted for ${liked ? "liked" : "disliked"} item!` });    } catch (err: unknown) {
       console.error("Failed to submit feedback:", err);
-      setFeedbackMessage({ type: "error", message: `Failed to submit feedback. ${err.message}` });
+      setFeedbackMessage({ type: "error", message: `Failed to submit feedback. ${(err as Error).message}` });
     } finally {
       setFeedbackStatus(prev => ({ ...prev, [recommendationId]: false }));
       setTimeout(() => setFeedbackMessage(null), 3000);

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, FormEvent, useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { addWardrobeItem } from "@/app/api/services/wardrobe-service";
-import { WardrobeItem } from "@/app/api/services/wardrobe-service"; // Assuming WardrobeItem type is exported
 import { Loader2, AlertTriangle, ImageIcon, X } from "lucide-react";
 
 interface AddItemFormProps {
@@ -98,9 +98,8 @@ const AddItemForm = ({ onSuccess }: AddItemFormProps) => {
       const fileInput = event.currentTarget.querySelector('input[type="file"]') as HTMLInputElement;
       if (fileInput) {
         fileInput.value = "";
-      }
-    } catch (err: any) {
-      setError(err.message || "Failed to add item. Please try again.");
+      }    } catch (err: unknown) {
+      setError((err as Error).message || "Failed to add item. Please try again.");
       console.error("Failed to add item:", err);
     } finally {
       setIsLoading(false);
@@ -174,10 +173,11 @@ const AddItemForm = ({ onSuccess }: AddItemFormProps) => {
         {/* Image Preview */}
         {imagePreview && (
           <div className="mt-4 relative">
-            <div className="w-full max-w-xs mx-auto rounded-lg overflow-hidden border border-muted bg-muted/30">
-              <img 
+            <div className="w-full max-w-xs mx-auto rounded-lg overflow-hidden border border-muted bg-muted/30">              <Image 
                 src={imagePreview} 
-                alt="Preview" 
+                alt="Preview"
+                width={400}
+                height={192}
                 className="w-full h-48 object-cover"
               />
             </div>

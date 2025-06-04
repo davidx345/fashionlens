@@ -2,11 +2,9 @@
 
 import { SessionProvider } from "next-auth/react"; // Import SessionProvider
 import { ThemeProvider } from "@/components/theme-provider";
-import { cn } from "@/lib/utils";
 import { BackButton } from "@/components/ui/back-button";
 import { usePathname } from "next/navigation";
 import { useSession } from "@/app/hooks/useSession";
-import { useEffect } from "react";
 
 function SessionManager({ children }: { children: React.ReactNode }) {
   const { isLoading } = useSession();

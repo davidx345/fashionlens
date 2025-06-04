@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { FileUploader } from '@/components/ui/file-uploader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,10 +43,10 @@ export default function OutfitAnalyzerPage() {
         ...result, 
         fileName: file.name, 
         imageUrl: newPreviewUrl 
-      });
-    } catch (err: any) {
+      });    } catch (err: unknown) {
       console.error("Outfit analysis failed:", err);
-      setError(err.message || "Failed to analyze outfit. Please try again.");
+      const errorMessage = err instanceof Error ? err.message : "Failed to analyze outfit. Please try again.";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -116,12 +117,13 @@ export default function OutfitAnalyzerPage() {
         <div className="flex flex-col items-center justify-center text-center p-12 min-h-[300px]">
           <Sparkles className="w-16 h-16 text-primary animate-pulse mb-4" />
           <p className="text-xl font-semibold text-foreground">Analyzing {uploadedFile?.name || "your outfit"}...</p>
-          <p className="text-muted-foreground">Please wait a moment.</p>
-          {previewUrl && (
+          <p className="text-muted-foreground">Please wait a moment.</p>          {previewUrl && (
              <div className="mt-4 rounded-lg overflow-hidden border border-muted aspect-square max-w-[200px] mx-auto bg-muted/30">
-               <img 
+               <Image 
                  src={previewUrl} 
                  alt="Uploading outfit" 
+                 width={200}
+                 height={200}
                  className="w-full h-full object-contain"
                />
              </div>
@@ -137,12 +139,13 @@ export default function OutfitAnalyzerPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-destructive-foreground">{error}</p>
-            {previewUrl && (
+            <p className="text-destructive-foreground">{error}</p>            {previewUrl && (
               <div className="my-4 rounded-lg overflow-hidden border border-muted aspect-square max-w-xs mx-auto bg-muted/30">
-                <img 
+                <Image 
                   src={previewUrl} 
                   alt="Failed upload attempt" 
+                  width={300}
+                  height={300}
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -166,12 +169,13 @@ export default function OutfitAnalyzerPage() {
               Detailed breakdown of your uploaded outfit: {analysisResult.fileName}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {analysisResult.imageUrl && (
+          <CardContent className="space-y-6">            {analysisResult.imageUrl && (
               <div className="my-4 rounded-lg overflow-hidden border border-muted aspect-square max-w-sm mx-auto bg-muted/30">
-                <img 
+                <Image 
                   src={analysisResult.imageUrl} 
                   alt={analysisResult.fileName || "Uploaded outfit"} 
+                  width={400}
+                  height={400}
                   className="w-full h-full object-contain"
                 />
               </div>

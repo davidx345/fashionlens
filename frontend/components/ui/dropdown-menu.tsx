@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
-import { cva } from "class-variance-authority";
 import { type ComponentPropsWithoutRef, type ElementRef } from "react"
 
 import { cn } from "@/lib/utils"
