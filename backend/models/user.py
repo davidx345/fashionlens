@@ -117,3 +117,37 @@ class User:
         )
         
         return result.modified_count > 0
+    
+    @staticmethod
+    def update_password(user_id, current_password, new_password):
+        """Update user password"""
+        db = get_db()
+        
+        # Convert string ID to ObjectId if necessary
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+            
+        # Get current user to verify current password
+        user = db.users.find_one({'_id': user_id})
+        
+        if not user:
+            return False, "User not found"
+            
+        # If user is an OAuth user, don't allow password update
+        if user.get('is_oauth_user', False):
+            return False, "OAuth users cannot update password"
+        
+        # Verify current password
+        if not bcrypt.checkpw(current_password.encode('utf-8'), user['password']):
+            return False, "Current password is incorrect"
+            
+        # Hash new password
+        hashed_new_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+        
+        # Update password
+        result = db.users.update_one(
+            {'_id': user_id},
+            {'$set': {'password': hashed_new_password}}
+        )
+        
+        return result.modified_count > 0, "Password updated successfully" if result.modified_count > 0 else "Failed to update password"
