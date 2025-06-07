@@ -93,3 +93,45 @@ def update_preferences():
     return jsonify({
         'preferences': updated_user.get('preferences', {})
     }), 200
+
+@user_bp.route('/password', methods=['PUT'])
+@jwt_required()
+def update_password():
+    """Update user password"""
+    # Get current user from JWT
+    current_user_id = get_jwt_identity()
+    from utils.db import get_db
+    from bson import ObjectId
+    db = get_db()
+    current_user = db.users.find_one({'_id': ObjectId(current_user_id)})
+    
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    data = request.get_json()
+    
+    # Validate input
+    if not data or not data.get('currentPassword') or not data.get('newPassword'):
+        return jsonify({'error': 'Current password and new password are required'}), 400
+    
+    # Validate new password strength
+    new_password = data['newPassword']
+    if len(new_password) < 8:
+        return jsonify({'error': 'New password must be at least 8 characters long'}), 400
+        
+    # Update password
+    success, message = User.update_password(
+        current_user['_id'], 
+        data['currentPassword'], 
+        new_password
+    )
+    
+    if not success:
+        if "incorrect" in message:
+            return jsonify({'error': message}), 400
+        elif "OAuth" in message:
+            return jsonify({'error': message}), 403
+        else:
+            return jsonify({'error': message}), 500
+    
+    return jsonify({'message': message}), 200
