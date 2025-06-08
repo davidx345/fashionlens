@@ -2,8 +2,9 @@ from flask import Blueprint, request, jsonify, current_app
 import os
 import uuid
 from werkzeug.utils import secure_filename
-from utils.auth import token_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.analysis import Analysis
+from models.user import User
 from ai.gemini_analyzer import GeminiAnalyzer
 
 analysis_bp = Blueprint('analysis', __name__)
@@ -15,9 +16,19 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @analysis_bp.route('/upload', methods=['POST'])
-@token_required
-def upload_images(current_user):
+@jwt_required()
+def upload_images():
     """Upload images for analysis"""
+    # Get current user from JWT
+    current_user_id = get_jwt_identity()
+    from utils.db import get_db
+    from bson import ObjectId
+    db = get_db()
+    current_user = db.users.find_one({'_id': ObjectId(current_user_id)})
+    
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+    
     # Check if request has files
     if 'images' not in request.files:
         return jsonify({'error': 'No images provided'}), 400
@@ -75,9 +86,19 @@ def upload_images(current_user):
     }), 201
 
 @analysis_bp.route('/<analysis_id>', methods=['GET'])
-@token_required
-def get_analysis(current_user, analysis_id):
+@jwt_required()
+def get_analysis(analysis_id):
     """Get analysis by ID"""
+    # Get current user from JWT
+    current_user_id = get_jwt_identity()
+    from utils.db import get_db
+    from bson import ObjectId
+    db = get_db()
+    current_user = db.users.find_one({'_id': ObjectId(current_user_id)})
+    
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+    
     analysis = Analysis.get_by_id(analysis_id)
     
     if not analysis:
@@ -90,9 +111,19 @@ def get_analysis(current_user, analysis_id):
     return jsonify(analysis), 200
 
 @analysis_bp.route('/history', methods=['GET'])
-@token_required
-def get_history(current_user):
+@jwt_required()
+def get_history():
     """Get analysis history for current user"""
+    # Get current user from JWT
+    current_user_id = get_jwt_identity()
+    from utils.db import get_db
+    from bson import ObjectId
+    db = get_db()
+    current_user = db.users.find_one({'_id': ObjectId(current_user_id)})
+    
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+    
     limit = request.args.get('limit', 10, type=int)
     analyses = Analysis.get_by_user(current_user['_id'], limit)
     
