@@ -19,7 +19,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(
     app,
-    origins=["http://localhost:3000","http://localhost:3001"],  # Allow your frontend origin
+    origins=["http://localhost:3000","https://fashionlens.vercel.app", "https://fashionlens-frontend-git-main-xstatic72s-projects.vercel.app", "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app"],  # Allow your frontend origin
     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Explicitly include OPTIONS
     allow_headers=["Content-Type", "Authorization", "X-Requested-With"],  # Common headers
     supports_credentials=True,
