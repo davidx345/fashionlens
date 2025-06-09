@@ -18,30 +18,22 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 
-# Enhanced CORS configuration for better compatibility
-CORS(
-    app,
-    origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000", 
-        "https://fashionlens.vercel.app", 
-        "https://fashionlens-frontend-git-main-xstatic72s-projects.vercel.app", 
-        "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app"
-    ],
-    methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allow_headers=[
-        "Content-Type", 
-        "Authorization", 
-        "X-Requested-With",
-        "Accept",
-        "Origin",
-        "Access-Control-Request-Method",
-        "Access-Control-Request-Headers"
-    ],
-    supports_credentials=True,
-    expose_headers=["Content-Length", "X-CSRF-Token"],
-    max_age=86400  # Cache preflight for 24 hours
-)
+# Define CORS origins (shared list)
+allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://fashionlens.vercel.app",
+    "https://fashionlens-frontend-git-main-xstatic72s-projects.vercel.app",
+    "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app"
+]
+
+# Apply CORS per blueprint
+CORS(auth_bp, origins=allowed_origins, supports_credentials=True)
+CORS(analysis_bp, origins=allowed_origins, supports_credentials=True)
+CORS(wardrobe_bp, origins=allowed_origins, supports_credentials=True)
+CORS(recommendations_bp, origins=allowed_origins, supports_credentials=True)
+CORS(user_bp, origins=allowed_origins, supports_credentials=True)
+CORS(dashboard_bp, origins=allowed_origins, supports_credentials=True)
 
 # Configure app
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
