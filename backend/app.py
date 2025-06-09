@@ -28,12 +28,12 @@ allowed_origins = [
 ]
 
 # Apply CORS per blueprint
-CORS(auth_bp, origins=allowed_origins, supports_credentials=True)
-CORS(analysis_bp, origins=allowed_origins, supports_credentials=True)
-CORS(wardrobe_bp, origins=allowed_origins, supports_credentials=True)
-CORS(recommendations_bp, origins=allowed_origins, supports_credentials=True)
-CORS(user_bp, origins=allowed_origins, supports_credentials=True)
-CORS(dashboard_bp, origins=allowed_origins, supports_credentials=True)
+CORS(auth_bp, supports_credentials=True)
+CORS(analysis_bp, supports_credentials=True)
+CORS(wardrobe_bp, supports_credentials=True)
+CORS(recommendations_bp, supports_credentials=True)
+CORS(user_bp, supports_credentials=True)
+CORS(dashboard_bp, supports_credentials=True)
 
 # Configure app
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
