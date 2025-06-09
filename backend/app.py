@@ -97,15 +97,32 @@ app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
 def handle_preflight():
     from flask import request, make_response
     if request.method == "OPTIONS":
+        # List of allowed origins
+        allowed_origins = [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "https://fashionlens.vercel.app",
+            "https://fashionlens-frontend-git-main-xstatic72s-projects.vercel.app",
+            "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app"
+        ]
+        
+        # Get the origin from the request
+        origin = request.headers.get('Origin')
+        
         # Create a proper JSON response for preflight requests
         response = make_response(jsonify({'status': 'preflight_ok'}))
-        response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
-        response.headers.add("Access-Control-Allow-Origin", "https://fashionlens.vercel.app")
-        response.headers.add("Access-Control-Allow-Origin", "https://fashionlens-frontend-git-main-xstatic72s-projects.vercel.app")
-        response.headers.add("Access-Control-Allow-Origin", "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app")
-        response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization,X-Requested-With")
-        response.headers.add('Access-Control-Allow-Methods', "GET,POST,PUT,DELETE,OPTIONS")
-        response.headers.add('Access-Control-Allow-Credentials', "true")
+        
+        # Only set the origin if it's in our allowed list
+        if origin in allowed_origins:
+            response.headers['Access-Control-Allow-Origin'] = origin
+        else:
+            # Fallback to first allowed origin for development
+            response.headers['Access-Control-Allow-Origin'] = allowed_origins[0]
+            
+        response.headers['Access-Control-Allow-Headers'] = "Content-Type,Authorization,X-Requested-With,Accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers"
+        response.headers['Access-Control-Allow-Methods'] = "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+        response.headers['Access-Control-Allow-Credentials'] = "true"
+        response.headers['Access-Control-Max-Age'] = "86400"
         # Explicitly set content type to application/json
         response.headers['Content-Type'] = 'application/json'
         return response
