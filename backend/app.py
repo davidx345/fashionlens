@@ -18,22 +18,15 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 
-# Define CORS origins (shared list)
-allowed_origins = [
+
+# Apply CORS per blueprint
+CORS(app, resources={r"/api/*": {"origins": [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://fashionlens.vercel.app",
     "https://fashionlens-frontend-git-main-xstatic72s-projects.vercel.app",
     "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app"
-]
-
-# Apply CORS per blueprint
-CORS(auth_bp, supports_credentials=True)
-CORS(analysis_bp, supports_credentials=True)
-CORS(wardrobe_bp, supports_credentials=True)
-CORS(recommendations_bp, supports_credentials=True)
-CORS(user_bp, supports_credentials=True)
-CORS(dashboard_bp, supports_credentials=True)
+]}}, supports_credentials=True)
 
 # Configure app
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
@@ -84,40 +77,6 @@ app.register_blueprint(recommendations_bp, url_prefix='/api/recommendations')
 app.register_blueprint(user_bp, url_prefix='/api/user')
 app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
 
-# Handle preflight requests for all routes
-@app.before_request
-def handle_preflight():
-    from flask import request, make_response
-    if request.method == "OPTIONS":
-        # List of allowed origins
-        allowed_origins = [
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-            "https://fashionlens.vercel.app",
-            "https://fashionlens-frontend-git-main-xstatic72s-projects.vercel.app",
-            "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app"
-        ]
-        
-        # Get the origin from the request
-        origin = request.headers.get('Origin')
-        
-        # Create a proper JSON response for preflight requests
-        response = make_response(jsonify({'status': 'preflight_ok'}))
-        
-        # Only set the origin if it's in our allowed list
-        if origin in allowed_origins:
-            response.headers['Access-Control-Allow-Origin'] = origin
-        else:
-            # Fallback to first allowed origin for development
-            response.headers['Access-Control-Allow-Origin'] = allowed_origins[0]
-            
-        response.headers['Access-Control-Allow-Headers'] = "Content-Type,Authorization,X-Requested-With,Accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers"
-        response.headers['Access-Control-Allow-Methods'] = "GET,POST,PUT,DELETE,PATCH,OPTIONS"
-        response.headers['Access-Control-Allow-Credentials'] = "true"
-        response.headers['Access-Control-Max-Age'] = "86400"
-        # Explicitly set content type to application/json
-        response.headers['Content-Type'] = 'application/json'
-        return response
 
 # Serve uploaded files
 @app.route('/uploads/<path:filename>')
