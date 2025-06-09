@@ -17,13 +17,30 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
+
+# Enhanced CORS configuration for better compatibility
 CORS(
     app,
-    origins=["http://localhost:3000","https://fashionlens.vercel.app", "https://fashionlens-frontend-git-main-xstatic72s-projects.vercel.app", "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app"],  # Allow your frontend origin
-    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Explicitly include OPTIONS
-    allow_headers=["Content-Type", "Authorization", "X-Requested-With"],  # Common headers
+    origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000", 
+        "https://fashionlens.vercel.app", 
+        "https://fashionlens-frontend-git-main-xstatic72s-projects.vercel.app", 
+        "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app"
+    ],
+    methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_headers=[
+        "Content-Type", 
+        "Authorization", 
+        "X-Requested-With",
+        "Accept",
+        "Origin",
+        "Access-Control-Request-Method",
+        "Access-Control-Request-Headers"
+    ],
     supports_credentials=True,
-    expose_headers=["Content-Length", "X-CSRF-Token"] # Expose common headers
+    expose_headers=["Content-Length", "X-CSRF-Token"],
+    max_age=86400  # Cache preflight for 24 hours
 )
 
 # Configure app
@@ -74,6 +91,17 @@ app.register_blueprint(wardrobe_bp, url_prefix='/api/wardrobe')
 app.register_blueprint(recommendations_bp, url_prefix='/api/recommendations')
 app.register_blueprint(user_bp, url_prefix='/api/user')
 app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
+
+# Handle preflight requests for all routes
+@app.before_request
+def handle_preflight():
+    from flask import request
+    if request.method == "OPTIONS":
+        response = jsonify({'status': 'ok'})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add('Access-Control-Allow-Headers', "*")
+        response.headers.add('Access-Control-Allow-Methods', "*")
+        return response
 
 # Serve uploaded files
 @app.route('/uploads/<path:filename>')
