@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, make_response
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
@@ -95,12 +95,19 @@ app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
 # Handle preflight requests for all routes
 @app.before_request
 def handle_preflight():
-    from flask import request
+    from flask import request, make_response
     if request.method == "OPTIONS":
-        response = jsonify({'status': 'ok'})
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        response.headers.add('Access-Control-Allow-Headers', "*")
-        response.headers.add('Access-Control-Allow-Methods', "*")
+        # Create a proper JSON response for preflight requests
+        response = make_response(jsonify({'status': 'preflight_ok'}))
+        response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
+        response.headers.add("Access-Control-Allow-Origin", "https://fashionlens.vercel.app")
+        response.headers.add("Access-Control-Allow-Origin", "https://fashionlens-frontend-git-main-xstatic72s-projects.vercel.app")
+        response.headers.add("Access-Control-Allow-Origin", "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app")
+        response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization,X-Requested-With")
+        response.headers.add('Access-Control-Allow-Methods', "GET,POST,PUT,DELETE,OPTIONS")
+        response.headers.add('Access-Control-Allow-Credentials', "true")
+        # Explicitly set content type to application/json
+        response.headers['Content-Type'] = 'application/json'
         return response
 
 # Serve uploaded files
