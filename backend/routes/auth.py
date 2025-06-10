@@ -8,10 +8,8 @@ import uuid # Import uuid for generating random passwords for OAuth users
 
 auth_bp = Blueprint('auth', __name__)
 
-@auth_bp.route('/register', methods=['POST', 'OPTIONS'])
+@auth_bp.route('/register', methods=['POST'])
 def register():
-    if request.method == 'OPTIONS':
-        return jsonify({}), 200  # Handle preflight
     """Register a new user"""
     data = request.get_json()
     
@@ -43,10 +41,8 @@ def register():
         'refresh_token': refresh_token
     }), 201
 
-@auth_bp.route('/login', methods=['POST', 'OPTIONS'])
+@auth_bp.route('/login', methods=['POST'])
 def login():
-    if request.method == 'OPTIONS':
-        return jsonify({}), 200  # Handle preflight
     """Login user"""
     data = request.get_json()
     
@@ -77,10 +73,9 @@ def login():
         'refresh_token': refresh_token
     }), 200
 
-@auth_bp.route('/oauth-login', methods=['POST', 'OPTIONS'])
+@auth_bp.route('/oauth-login', methods=['POST'])
 def oauth_login():
-    if request.method == 'OPTIONS':
-        return jsonify({}), 200  # Handle preflight
+    
     """Handle OAuth login/registration"""
     data = request.get_json()
 
@@ -132,15 +127,10 @@ def oauth_login():
     }), 200
 
 
-@auth_bp.route('/me', methods=['GET', 'OPTIONS'])
+@auth_bp.route('/me', methods=['GET'])
+
 @token_required
 def me(current_user):
-    if request.method == 'OPTIONS':
-        # For GET requests, OPTIONS might not be strictly needed if no custom headers trigger preflight
-        # but it's good practice for consistency if other parts of the API use it.
-        # Flask-CORS should handle simple GETs without this, but for complex GETs (e.g. with Authorization)
-        # this ensures preflight passes.
-        return jsonify({}), 200 # Handle preflight
     """Get current user"""
     return jsonify({
         'user': {
@@ -150,12 +140,11 @@ def me(current_user):
         }
     }), 200
 
-@auth_bp.route('/refresh', methods=['POST', 'OPTIONS'])
+@auth_bp.route('/refresh', methods=['POST'])
+
 @jwt_required(refresh=True)
 def refresh():
     """Refresh access token using refresh token"""
-    if request.method == 'OPTIONS':
-        return jsonify({}), 200
     
     try:
         current_user_id = get_jwt_identity()
@@ -170,12 +159,10 @@ def refresh():
     except Exception as e:
         return jsonify({'error': 'Failed to refresh token'}), 500
 
-@auth_bp.route('/logout', methods=['POST', 'OPTIONS'])
+@auth_bp.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
     """Logout user and revoke tokens"""
-    if request.method == 'OPTIONS':
-        return jsonify({}), 200
     
     try:
         # Get the JWT token identifier
@@ -190,12 +177,10 @@ def logout():
     except Exception as e:
         return jsonify({'error': 'Failed to logout'}), 500
 
-@auth_bp.route('/logout-all', methods=['POST', 'OPTIONS'])
+@auth_bp.route('/logout-all', methods=['POST'])
 @jwt_required()
 def logout_all():
     """Logout user from all devices by revoking all tokens"""
-    if request.method == 'OPTIONS':
-        return jsonify({}), 200
     
     try:
         # In a real application, you would store user sessions in database
@@ -211,12 +196,10 @@ def logout_all():
     except Exception as e:
         return jsonify({'error': 'Failed to logout from all devices'}), 500
 
-@auth_bp.route('/session-check', methods=['GET', 'OPTIONS'])
+@auth_bp.route('/session-check', methods=['GET'])
 @jwt_required()
 def session_check():
     """Check if current session is valid"""
-    if request.method == 'OPTIONS':
-        return jsonify({}), 200
     
     try:
         current_user_id = get_jwt_identity()

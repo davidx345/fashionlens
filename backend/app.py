@@ -41,6 +41,23 @@ app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 
+
+# @app.before_request
+# def handle_options():
+#     if request.method == 'OPTIONS':
+#         console.log("options")
+#         response = app.make_default_options_response()
+#         console.log(response)
+#         headers = response.headers
+#         console.log(request.headers.get('Origin'))
+#         headers['Access-Control-Allow-Origin'] = request.headers.get('Origin')
+#         headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+#         headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
+#         headers['Access-Control-Allow-Credentials'] = 'true'
+
+#         return response
+
+
 # Initialize JWT
 jwt = JWTManager(app)
 
