@@ -8,6 +8,27 @@ import uuid # Import uuid for generating random passwords for OAuth users
 
 auth_bp = Blueprint('auth', __name__)
 
+# Add explicit OPTIONS handlers for CORS preflight
+@auth_bp.route('/register', methods=['OPTIONS'])
+def register_options():
+    """Handle preflight request for register"""
+    return '', 200
+
+@auth_bp.route('/login', methods=['OPTIONS'])
+def login_options():
+    """Handle preflight request for login"""
+    return '', 200
+
+@auth_bp.route('/refresh', methods=['OPTIONS'])
+def refresh_options():
+    """Handle preflight request for refresh"""
+    return '', 200
+
+@auth_bp.route('/logout', methods=['OPTIONS'])
+def logout_options():
+    """Handle preflight request for logout"""
+    return '', 200
+
 @auth_bp.route('/register', methods=['POST'])
 def register():
     """Register a new user"""

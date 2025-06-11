@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory, make_response
+from flask import Flask, jsonify, send_from_directory, make_response, request
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
@@ -18,15 +18,35 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 
-
-# Apply CORS per blueprint
-CORS(app, resources={r"/api/*": {"origins": [
+# Define allowed origins (including dynamic Vercel URLs)
+ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://fashionlens.vercel.app",
     "https://fashionlens-frontend-git-main-xstatic72s-projects.vercel.app",
     "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app"
-]}}, supports_credentials=True)
+]
+
+# Add environment variable for additional origins (useful for dynamic Vercel deployments)
+if os.environ.get('ADDITIONAL_ORIGINS'):
+    additional_origins = os.environ.get('ADDITIONAL_ORIGINS').split(',')
+    ALLOWED_ORIGINS.extend([origin.strip() for origin in additional_origins])
+
+# For testing in production, you can temporarily allow all origins
+# Set ALLOW_ALL_ORIGINS=true in Railway environment variables
+if os.environ.get('ALLOW_ALL_ORIGINS', '').lower() == 'true':
+    ALLOWED_ORIGINS = ["*"]
+
+print(f"🚀 CORS Allowed Origins: {ALLOWED_ORIGINS}")
+
+# Remove Flask-CORS automatic handling - we'll handle it manually
+# Apply CORS with dynamic origin handling
+CORS(app, 
+     resources={r"/api/*": {"origins": "*"}}, 
+     supports_credentials=True,
+     allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+     expose_headers=["Content-Type", "Authorization"])
 
 # Configure app
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
@@ -41,21 +61,59 @@ app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 
+# Production-ready CORS preflight handler
+@app.before_request
+def handle_preflight():
+    """Enhanced CORS preflight handler for production deployment"""
+    if request.method == 'OPTIONS':
+        origin = request.headers.get('Origin')
+        
+        # Debug logging for Railway deployment
+        print(f"🔍 OPTIONS request from origin: {origin}")
+        print(f"📋 Allowed origins: {ALLOWED_ORIGINS}")
+        
+        # Check if origin is allowed
+        if "*" in ALLOWED_ORIGINS or (origin and origin in ALLOWED_ORIGINS):
+            response = make_response('', 200)
+            
+            # Set CORS headers
+            if "*" in ALLOWED_ORIGINS:
+                response.headers['Access-Control-Allow-Origin'] = '*'
+            else:
+                response.headers['Access-Control-Allow-Origin'] = origin
+                
+            response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Requested-With,Accept,Origin'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Max-Age'] = '3600'
+            
+            # Explicitly set content type for Railway
+            response.headers['Content-Type'] = 'application/json'
+            
+            print(f"✅ CORS preflight approved for origin: {origin}")
+            return response
+        else:
+            print(f"❌ CORS preflight rejected for origin: {origin}")
+            response = jsonify({'error': 'CORS origin not allowed'})
+            response.status_code = 403
+            return response
 
-# @app.before_request
-# def handle_options():
-#     if request.method == 'OPTIONS':
-#         console.log("options")
-#         response = app.make_default_options_response()
-#         console.log(response)
-#         headers = response.headers
-#         console.log(request.headers.get('Origin'))
-#         headers['Access-Control-Allow-Origin'] = request.headers.get('Origin')
-#         headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-#         headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
-#         headers['Access-Control-Allow-Credentials'] = 'true'
-
-#         return response
+@app.after_request
+def after_request(response):
+    """Enhanced after request handler for consistent CORS headers"""
+    origin = request.headers.get('Origin')
+    
+    if "*" in ALLOWED_ORIGINS or (origin and origin in ALLOWED_ORIGINS):
+        if "*" in ALLOWED_ORIGINS:
+            response.headers['Access-Control-Allow-Origin'] = '*'
+        else:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Requested-With,Accept,Origin'
+        
+    return response
 
 
 # Initialize JWT
@@ -112,6 +170,17 @@ def index():
 @app.route('/api/health/ping')
 def health_ping():
     return jsonify({'status': 'ok', 'message': 'API is running'}), 200
+
+@app.route('/api/health/cors', methods=['GET', 'POST', 'OPTIONS'])
+def health_cors():
+    """Test CORS configuration"""
+    origin = request.headers.get('Origin')
+    return jsonify({
+        'status': 'ok', 
+        'message': 'CORS is working',
+        'origin': origin,
+        'method': request.method
+    }), 200
 
 @app.route('/api/health/db')
 def health_db():
