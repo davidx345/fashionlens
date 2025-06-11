@@ -42,7 +42,7 @@ print(f"🚀 CORS Allowed Origins: {ALLOWED_ORIGINS}")
 # Remove Flask-CORS automatic handling - we'll handle it manually
 # Apply CORS with dynamic origin handling
 CORS(app, 
-     resources={r"/api/*": {"origins": "*"}}, 
+     resources={r"/api/*": {"origins": ALLOWED_ORIGINS}}, 
      supports_credentials=True,
      allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
