@@ -18,7 +18,7 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 
-# Define allowed origins (including dynamic Vercel URLs)
+# Define allowed frontend origins explicitly
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -27,99 +27,65 @@ ALLOWED_ORIGINS = [
     "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app"
 ]
 
-# Add environment variable for additional origins (useful for dynamic Vercel deployments)
+# Add extra allowed origins from environment variable
 if os.environ.get('ADDITIONAL_ORIGINS'):
-    additional_origins = os.environ.get('ADDITIONAL_ORIGINS').split(',')
-    ALLOWED_ORIGINS.extend([origin.strip() for origin in additional_origins])
+    ALLOWED_ORIGINS += [o.strip() for o in os.environ.get('ADDITIONAL_ORIGINS').split(',')]
 
-# For testing in production, you can temporarily allow all origins
-# Set ALLOW_ALL_ORIGINS=true in Railway environment variables
-if os.environ.get('ALLOW_ALL_ORIGINS', '').lower() == 'true':
-    ALLOWED_ORIGINS = ["*"]
+print(f"🚀 Allowed Origins: {ALLOWED_ORIGINS}")
 
-print(f"🚀 CORS Allowed Origins: {ALLOWED_ORIGINS}")
-
-# Remove Flask-CORS automatic handling - we'll handle it manually
-# Apply CORS with dynamic origin handling
-CORS(app, 
-     resources={r"/api/*": {"origins": ALLOWED_ORIGINS}}, 
+# Apply CORS securely (no wildcard when using credentials)
+CORS(app,
+     resources={r"/api/*": {"origins": ALLOWED_ORIGINS}},
      supports_credentials=True,
      allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
      expose_headers=["Content-Type", "Authorization"])
 
 # Configure app
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
-app.config['MONGO_URI'] = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/fashion_analysis')
-app.config['UPLOAD_FOLDER'] = os.environ.get('UPLOAD_FOLDER', 'uploads')
-app.config['GEMINI_API_KEY'] = os.environ.get('GEMINI_API_KEY')
+app.config.update({
+    'SECRET_KEY': os.environ.get('SECRET_KEY', 'dev-secret-key'),
+    'MONGO_URI': os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/fashion_analysis'),
+    'UPLOAD_FOLDER': os.environ.get('UPLOAD_FOLDER', 'uploads'),
+    'GEMINI_API_KEY': os.environ.get('GEMINI_API_KEY'),
+    'JWT_SECRET_KEY': os.environ.get('JWT_SECRET_KEY', 'jwt-secret-string'),
+    'JWT_ACCESS_TOKEN_EXPIRES': timedelta(hours=1),
+    'JWT_REFRESH_TOKEN_EXPIRES': timedelta(days=30),
+    'JWT_BLACKLIST_ENABLED': True,
+    'JWT_BLACKLIST_TOKEN_CHECKS': ['access', 'refresh']
+})
 
-# JWT Configuration for persistent sessions
-app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'jwt-secret-string')
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
-app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
-app.config['JWT_BLACKLIST_ENABLED'] = True
-app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
-
-# Production-ready CORS preflight handler
+# CORS preflight handler
 @app.before_request
 def handle_preflight():
-    """Enhanced CORS preflight handler for production deployment"""
     if request.method == 'OPTIONS':
         origin = request.headers.get('Origin')
-        
-        # Debug logging for Railway deployment
-        print(f"🔍 OPTIONS request from origin: {origin}")
-        print(f"📋 Allowed origins: {ALLOWED_ORIGINS}")
-        
-        # Check if origin is allowed
-        if "*" in ALLOWED_ORIGINS or (origin and origin in ALLOWED_ORIGINS):
+        if origin and origin in ALLOWED_ORIGINS:
             response = make_response('', 200)
-            
-            # Set CORS headers
-            if "*" in ALLOWED_ORIGINS:
-                response.headers['Access-Control-Allow-Origin'] = '*'
-            else:
-                response.headers['Access-Control-Allow-Origin'] = origin
-                
-            response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
-            response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Requested-With,Accept,Origin'
-            response.headers['Access-Control-Allow-Credentials'] = 'true'
-            response.headers['Access-Control-Max-Age'] = '3600'
-            
-            # Explicitly set content type for Railway
-            response.headers['Content-Type'] = 'application/json'
-            
-            print(f"✅ CORS preflight approved for origin: {origin}")
+            response.headers.update({
+                'Access-Control-Allow-Origin': origin,
+                'Access-Control-Allow-Credentials': 'true',
+                'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Requested-With,Accept,Origin',
+                'Access-Control-Max-Age': '3600'
+            })
             return response
-        else:
-            print(f"❌ CORS preflight rejected for origin: {origin}")
-            response = jsonify({'error': 'CORS origin not allowed'})
-            response.status_code = 403
-            return response
+        return jsonify({'error': 'CORS origin not allowed'}), 403
 
+# After request CORS enforcement
 @app.after_request
 def after_request(response):
-    """Enhanced after request handler for consistent CORS headers"""
     origin = request.headers.get('Origin')
-    
-    if "*" in ALLOWED_ORIGINS or (origin and origin in ALLOWED_ORIGINS):
-        if "*" in ALLOWED_ORIGINS:
-            response.headers['Access-Control-Allow-Origin'] = '*'
-        else:
-            response.headers['Access-Control-Allow-Origin'] = origin
-            
-        response.headers['Access-Control-Allow-Credentials'] = 'true'
-        response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Requested-With,Accept,Origin'
-        
+    if origin and origin in ALLOWED_ORIGINS:
+        response.headers.update({
+            'Access-Control-Allow-Origin': origin,
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Requested-With,Accept,Origin'
+        })
     return response
 
-
-# Initialize JWT
+# JWT setup
 jwt = JWTManager(app)
-
-# Create blacklist set for token revocation
 blacklist = set()
 
 @jwt.token_in_blocklist_loader
@@ -138,13 +104,13 @@ def invalid_token_callback(error):
 def missing_token_callback(error):
     return jsonify({'message': 'Authentication token required'}), 401
 
-# Ensure upload directory exists
+# Uploads directory
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Initialize database
+# Database init
 initialize_db(app)
 
-# Register blueprints
+# Blueprints
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(analysis_bp, url_prefix='/api/analysis')
 app.register_blueprint(wardrobe_bp, url_prefix='/api/wardrobe')
@@ -152,44 +118,38 @@ app.register_blueprint(recommendations_bp, url_prefix='/api/recommendations')
 app.register_blueprint(user_bp, url_prefix='/api/user')
 app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
 
-
-# Serve uploaded files
+# Uploads route
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# Root route
+# Root
 @app.route('/')
 def index():
-    return jsonify({
-        'message': 'Fashion Analysis API',
-        'status': 'running'
-    })
+    return jsonify({'message': 'Fashion Analysis API', 'status': 'running'})
 
-# Health check endpoints
+# Health Checks
 @app.route('/api/health/ping')
 def health_ping():
-    return jsonify({'status': 'ok', 'message': 'API is running'}), 200
+    return jsonify({'status': 'ok', 'message': 'API is running'})
 
 @app.route('/api/health/cors', methods=['GET', 'POST', 'OPTIONS'])
 def health_cors():
-    """Test CORS configuration"""
     origin = request.headers.get('Origin')
     return jsonify({
-        'status': 'ok', 
+        'status': 'ok',
         'message': 'CORS is working',
         'origin': origin,
         'method': request.method
-    }), 200
+    })
 
 @app.route('/api/health/db')
 def health_db():
     try:
         from utils.db import get_db
         db = get_db()
-        # Just perform a simple check to see if we can connect
         db.command('ping')
-        return jsonify({'status': 'connected', 'message': 'Database connection successful'}), 200
+        return jsonify({'status': 'connected', 'message': 'Database connection successful'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
@@ -202,6 +162,7 @@ def not_found(error):
 def server_error(error):
     return jsonify({'error': 'Server error'}), 500
 
+# Run app
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
