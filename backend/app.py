@@ -42,11 +42,18 @@ print(f"🚀 CORS Allowed Origins: {ALLOWED_ORIGINS}")
 # Remove Flask-CORS automatic handling - we'll handle it manually
 # Apply CORS with dynamic origin handling
 CORS(app, 
-     resources={r"/api/*": {"origins": "*"}}, 
+     resources={r"/api/*": {"origins": [
+         "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://fashionlens.vercel.app",
+        "https://fashionlens-frontend-git-main-xstatic72s-projects.vercel.app",
+        "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app"
+     ]}}, 
      supports_credentials=True,
      allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
      expose_headers=["Content-Type", "Authorization"])
+
 
 # Configure app
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
@@ -73,14 +80,11 @@ def handle_preflight():
         print(f"📋 Allowed origins: {ALLOWED_ORIGINS}")
         
         # Check if origin is allowed
-        if "*" in ALLOWED_ORIGINS or (origin and origin in ALLOWED_ORIGINS):
+        if origin and origin in ALLOWED_ORIGINS:
             response = make_response('', 200)
             
-            # Set CORS headers
-            if "*" in ALLOWED_ORIGINS:
-                response.headers['Access-Control-Allow-Origin'] = '*'
-            else:
-                response.headers['Access-Control-Allow-Origin'] = origin
+
+            response.headers['Access-Control-Allow-Origin'] = origin
                 
             response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
             response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Requested-With,Accept,Origin'
@@ -103,10 +107,8 @@ def after_request(response):
     """Enhanced after request handler for consistent CORS headers"""
     origin = request.headers.get('Origin')
     
-    if "*" in ALLOWED_ORIGINS or (origin and origin in ALLOWED_ORIGINS):
-        if "*" in ALLOWED_ORIGINS:
-            response.headers['Access-Control-Allow-Origin'] = '*'
-        else:
+    if origin and origin in ALLOWED_ORIGINS:
+        if origin in ALLOWED_ORIGINS:
             response.headers['Access-Control-Allow-Origin'] = origin
             
         response.headers['Access-Control-Allow-Credentials'] = 'true'
