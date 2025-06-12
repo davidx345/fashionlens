@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory, make_response, request
+from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
@@ -18,7 +18,7 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 
-# Define allowed origins (including dynamic Vercel URLs)
+# Define allowed frontend origins
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -27,15 +27,11 @@ ALLOWED_ORIGINS = [
     "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app"
 ]
 
-# Add environment variable for additional origins (useful for dynamic Vercel deployments)
+# Load additional origins from .env
 if os.environ.get('ADDITIONAL_ORIGINS'):
-    additional_origins = os.environ.get('ADDITIONAL_ORIGINS').split(',')
-    ALLOWED_ORIGINS.extend([origin.strip() for origin in additional_origins])
+    ALLOWED_ORIGINS += [o.strip() for o in os.environ.get('ADDITIONAL_ORIGINS').split(',')]
 
-# For testing in production, you can temporarily allow all origins
-# Set ALLOW_ALL_ORIGINS=true in Railway environment variables
-if os.environ.get('ALLOW_ALL_ORIGINS', '').lower() == 'true':
-    ALLOWED_ORIGINS = ["*"]
+print(f"🚀 Allowed Origins: {ALLOWED_ORIGINS}")
 
 print(f"🚀 CORS Allowed Origins: {ALLOWED_ORIGINS}")
 
@@ -120,8 +116,6 @@ def after_request(response):
 
 # Initialize JWT
 jwt = JWTManager(app)
-
-# Create blacklist set for token revocation
 blacklist = set()
 
 @jwt.token_in_blocklist_loader
@@ -140,10 +134,10 @@ def invalid_token_callback(error):
 def missing_token_callback(error):
     return jsonify({'message': 'Authentication token required'}), 401
 
-# Ensure upload directory exists
+# Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Initialize database
+# Initialize DB
 initialize_db(app)
 
 # Register blueprints
@@ -154,44 +148,38 @@ app.register_blueprint(recommendations_bp, url_prefix='/api/recommendations')
 app.register_blueprint(user_bp, url_prefix='/api/user')
 app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
 
-
-# Serve uploaded files
+# Static uploads
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# Root route
+# API root
 @app.route('/')
 def index():
-    return jsonify({
-        'message': 'Fashion Analysis API',
-        'status': 'running'
-    })
+    return jsonify({'message': 'Fashion Analysis API', 'status': 'running'})
 
-# Health check endpoints
+# Health check routes
 @app.route('/api/health/ping')
 def health_ping():
-    return jsonify({'status': 'ok', 'message': 'API is running'}), 200
+    return jsonify({'status': 'ok', 'message': 'API is running'})
 
 @app.route('/api/health/cors', methods=['GET', 'POST', 'OPTIONS'])
 def health_cors():
-    """Test CORS configuration"""
     origin = request.headers.get('Origin')
     return jsonify({
-        'status': 'ok', 
+        'status': 'ok',
         'message': 'CORS is working',
         'origin': origin,
         'method': request.method
-    }), 200
+    })
 
 @app.route('/api/health/db')
 def health_db():
     try:
         from utils.db import get_db
         db = get_db()
-        # Just perform a simple check to see if we can connect
         db.command('ping')
-        return jsonify({'status': 'connected', 'message': 'Database connection successful'}), 200
+        return jsonify({'status': 'connected', 'message': 'Database connection successful'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
@@ -204,6 +192,7 @@ def not_found(error):
 def server_error(error):
     return jsonify({'error': 'Server error'}), 500
 
+# Run the app
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
