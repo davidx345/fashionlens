@@ -1,6 +1,6 @@
 import bcrypt
 from bson.objectid import ObjectId
-from utils.db import get_db, serialize_doc
+from backend.utils.db import get_db, serialize_doc
 import datetime
 
 class User:

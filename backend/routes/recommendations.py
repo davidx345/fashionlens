@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models.recommendation import Recommendation
-from ai.recommender import OutfitRecommender
+from backend.models.recommendation import Recommendation
+from backend.ai.recommender import OutfitRecommender
 
 recommendations_bp = Blueprint('recommendations', __name__)
 

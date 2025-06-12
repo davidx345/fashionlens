@@ -4,13 +4,8 @@ from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 import os
 from datetime import timedelta
-from routes.auth import auth_bp
-from routes.analysis import analysis_bp
-from routes.wardrobe import wardrobe_bp
-from routes.recommendations import recommendations_bp
-from routes.user import user_bp
-from routes.dashboard import dashboard_bp
-from utils.db import initialize_db
+from backend.routes import auth_bp,  analysis_bp, wardrobe_bp, recommendations_bp, user_bp, dashboard_bp
+from backend.utils.db import initialize_db
 
 # Load environment variables
 load_dotenv()
