@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory, make_response, request
+from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
@@ -18,7 +18,7 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 
-# Define allowed frontend origins explicitly
+# Define allowed frontend origins
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -27,21 +27,21 @@ ALLOWED_ORIGINS = [
     "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app"
 ]
 
-# Add extra allowed origins from environment variable
+# Load additional origins from .env
 if os.environ.get('ADDITIONAL_ORIGINS'):
     ALLOWED_ORIGINS += [o.strip() for o in os.environ.get('ADDITIONAL_ORIGINS').split(',')]
 
 print(f"🚀 Allowed Origins: {ALLOWED_ORIGINS}")
 
-# Apply CORS securely (no wildcard when using credentials)
+# Apply global CORS middleware
 CORS(app,
-     resources={r"/api/*": {"origins": ALLOWED_ORIGINS}},
+     origins=ALLOWED_ORIGINS,
      supports_credentials=True,
      allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
      expose_headers=["Content-Type", "Authorization"])
 
-# Configure app
+# Flask configuration
 app.config.update({
     'SECRET_KEY': os.environ.get('SECRET_KEY', 'dev-secret-key'),
     'MONGO_URI': os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/fashion_analysis'),
@@ -53,36 +53,6 @@ app.config.update({
     'JWT_BLACKLIST_ENABLED': True,
     'JWT_BLACKLIST_TOKEN_CHECKS': ['access', 'refresh']
 })
-
-# CORS preflight handler
-@app.before_request
-def handle_preflight():
-    if request.method == 'OPTIONS':
-        origin = request.headers.get('Origin')
-        if origin and origin in ALLOWED_ORIGINS:
-            response = make_response('', 200)
-            response.headers.update({
-                'Access-Control-Allow-Origin': origin,
-                'Access-Control-Allow-Credentials': 'true',
-                'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Requested-With,Accept,Origin',
-                'Access-Control-Max-Age': '3600'
-            })
-            return response
-        return jsonify({'error': 'CORS origin not allowed'}), 403
-
-# After request CORS enforcement
-@app.after_request
-def after_request(response):
-    origin = request.headers.get('Origin')
-    if origin and origin in ALLOWED_ORIGINS:
-        response.headers.update({
-            'Access-Control-Allow-Origin': origin,
-            'Access-Control-Allow-Credentials': 'true',
-            'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Requested-With,Accept,Origin'
-        })
-    return response
 
 # JWT setup
 jwt = JWTManager(app)
@@ -104,13 +74,13 @@ def invalid_token_callback(error):
 def missing_token_callback(error):
     return jsonify({'message': 'Authentication token required'}), 401
 
-# Uploads directory
+# Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Database init
+# Initialize DB
 initialize_db(app)
 
-# Blueprints
+# Register blueprints
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(analysis_bp, url_prefix='/api/analysis')
 app.register_blueprint(wardrobe_bp, url_prefix='/api/wardrobe')
@@ -118,17 +88,17 @@ app.register_blueprint(recommendations_bp, url_prefix='/api/recommendations')
 app.register_blueprint(user_bp, url_prefix='/api/user')
 app.register_blueprint(dashboard_bp, url_prefix='/api/dashboard')
 
-# Uploads route
+# Static uploads
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# Root
+# API root
 @app.route('/')
 def index():
     return jsonify({'message': 'Fashion Analysis API', 'status': 'running'})
 
-# Health Checks
+# Health check routes
 @app.route('/api/health/ping')
 def health_ping():
     return jsonify({'status': 'ok', 'message': 'API is running'})
@@ -162,7 +132,7 @@ def not_found(error):
 def server_error(error):
     return jsonify({'error': 'Server error'}), 500
 
-# Run app
+# Run the app
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
