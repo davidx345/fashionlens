@@ -3,8 +3,9 @@ import os
 import uuid
 from werkzeug.utils import secure_filename
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from backend.models.analysis import Analysis
-from backend.ai.gemini_analyzer import GeminiAnalyzer
+from models.analysis import Analysis
+from models.user import User
+from ai.gemini_analyzer import GeminiAnalyzer
 
 analysis_bp = Blueprint('analysis', __name__)
 

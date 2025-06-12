@@ -2,7 +2,7 @@ import jwt
 import datetime
 from functools import wraps
 from flask import request, jsonify, current_app
-from backend.utils.db import get_db, serialize_doc
+from utils.db import get_db, serialize_doc
 from bson.objectid import ObjectId
 
 def generate_token(user_id):

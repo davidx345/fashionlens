@@ -1,5 +1,5 @@
 from bson.objectid import ObjectId
-from backend.utils.db import get_db, serialize_doc
+from utils.db import get_db, serialize_doc
 import datetime
 
 class Recommendation:

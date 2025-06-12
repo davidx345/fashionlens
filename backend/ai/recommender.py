@@ -1,6 +1,7 @@
 import numpy as np
-from backend.utils.db import get_db
+from utils.db import get_db, serialize_doc
 from bson.objectid import ObjectId
+import datetime
 
 class OutfitRecommender:
     """Class for generating outfit recommendations"""

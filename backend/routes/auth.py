@@ -1,7 +1,9 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
-from backend.models.user import User
-from backend.utils.auth import generate_token, token_required
+import datetime
+import bcrypt
+from models.user import User
+from utils.auth import generate_token, token_required
 import uuid # Import uuid for generating random passwords for OAuth users
 
 auth_bp = Blueprint('auth', __name__)

@@ -2,10 +2,10 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime, timedelta
 from bson import ObjectId
-from backend.models.analysis import Analysis
-from backend.models.wardrobe import WardrobeItem  
-from backend.models.user import User
-from backend.utils.db import get_db
+from models.analysis import Analysis
+from models.wardrobe import WardrobeItem  
+from models.user import User
+from utils.db import get_db
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
