@@ -31,20 +31,12 @@ ALLOWED_ORIGINS = [
 if os.environ.get('ADDITIONAL_ORIGINS'):
     ALLOWED_ORIGINS += [o.strip() for o in os.environ.get('ADDITIONAL_ORIGINS').split(',')]
 
-print(f"🚀 Allowed Origins: {ALLOWED_ORIGINS}")
-
 print(f"🚀 CORS Allowed Origins: {ALLOWED_ORIGINS}")
 
 # Remove Flask-CORS automatic handling - we'll handle it manually
 # Apply CORS with dynamic origin handling
 CORS(app, 
-     resources={r"/api/*": {"origins": [
-         "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "https://fashionlens.vercel.app",
-        "https://fashionlens-frontend-git-main-xstatic72s-projects.vercel.app",
-        "https://fashionlens-frontend-80hxu1e2n-xstatic72s-projects.vercel.app"
-     ]}}, 
+     origins=ALLOWED_ORIGINS,
      supports_credentials=True,
      allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -63,55 +55,6 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
-
-# Production-ready CORS preflight handler
-@app.before_request
-def handle_preflight():
-    """Enhanced CORS preflight handler for production deployment"""
-    if request.method == 'OPTIONS':
-        origin = request.headers.get('Origin')
-        
-        # Debug logging for Railway deployment
-        print(f"🔍 OPTIONS request from origin: {origin}")
-        print(f"📋 Allowed origins: {ALLOWED_ORIGINS}")
-        
-        # Check if origin is allowed
-        if origin and origin in ALLOWED_ORIGINS:
-            response = make_response('', 200)
-            
-
-            response.headers['Access-Control-Allow-Origin'] = origin
-                
-            response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
-            response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Requested-With,Accept,Origin'
-            response.headers['Access-Control-Allow-Credentials'] = 'true'
-            response.headers['Access-Control-Max-Age'] = '3600'
-            
-            # Explicitly set content type for Railway
-            response.headers['Content-Type'] = 'application/json'
-            
-            print(f"✅ CORS preflight approved for origin: {origin}")
-            return response
-        else:
-            print(f"❌ CORS preflight rejected for origin: {origin}")
-            response = jsonify({'error': 'CORS origin not allowed'})
-            response.status_code = 403
-            return response
-
-@app.after_request
-def after_request(response):
-    """Enhanced after request handler for consistent CORS headers"""
-    origin = request.headers.get('Origin')
-    
-    if origin and origin in ALLOWED_ORIGINS:
-        if origin in ALLOWED_ORIGINS:
-            response.headers['Access-Control-Allow-Origin'] = origin
-            
-        response.headers['Access-Control-Allow-Credentials'] = 'true'
-        response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Requested-With,Accept,Origin'
-        
-    return response
 
 
 # Initialize JWT
