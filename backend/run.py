@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-from app import app # Imports the Flask app instance from app.py in the same directory
+from app import app # Imports the Flask app instance from app.py (no change, just clarifying comment)
 
 if __name__ == "__main__":
     # Read host, port, and debug settings from environment variables
